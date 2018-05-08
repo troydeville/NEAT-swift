@@ -137,7 +137,7 @@ public class Network {
         self.population[genomeIndex].createPhenotype(depth: depth)
     }
     
-    func genomeSetFitness(index: Int, fitness: Double) {
+    func setGenomeFitness(index: Int, fitness: Double) {
         population[index].setFitness(fit: fitness)
     }
     
