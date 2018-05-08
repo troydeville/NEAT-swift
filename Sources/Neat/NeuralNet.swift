@@ -10,7 +10,7 @@ import Foundation
 
 
 
-class NeuralNet {
+public class NeuralNet {
     
     private var neurons: [Neuron]
     private var depth: Int

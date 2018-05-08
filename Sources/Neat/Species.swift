@@ -8,7 +8,7 @@
 
 import Foundation
 
-class Species {
+public class Species {
     
     private var leader: Genome = Genome()
     private var organisms: [Genome] = [Genome]()

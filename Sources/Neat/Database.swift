@@ -8,7 +8,7 @@
 
 import Foundation
 
-class Database {
+public class Database {
     
     private var innovationNumber = 1
     private var neuronID: Int = 1

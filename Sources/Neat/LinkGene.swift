@@ -8,7 +8,7 @@
 
 import Foundation
 
-class LinkGene {
+public class LinkGene {
     
     private var from: Int = 0
     private var to: Int = 0
