@@ -23,7 +23,7 @@ public struct Neat {
     // Run the genome
     public mutating func run(input: Double...) -> [Double] {
         var depth: Int = 1
-        var lowestPosition: Double = 1000
+        var lowestPosition: Double = 1000000
         for n in network.genomeGetNeuronGenes(index: populationIndexPos) {
             let yPos: Double = n.getYPos()
             if yPos < lowestPosition && yPos > 0 {
@@ -69,3 +69,19 @@ public struct Neat {
     }
     
 }
+
+public extension Neat {
+    
+    public func getGeneration() -> Int { return self.generation }
+    public func getTopFitnessScore() -> Double { return self.topFitnessScore }
+    public func getPopulationIndexPos() -> Int { return self.populationIndexPos }
+    
+    public func getCurrentFitnessScore() -> Double { return self.currentFitnessScore }
+    public mutating func setCurrentFitnessScore(score: Double) { self.currentFitnessScore = score }
+    
+}
+
+
+
+
+
