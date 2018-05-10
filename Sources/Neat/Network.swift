@@ -167,7 +167,6 @@ public class Network {
         } else {
             N = Double(genomeB.numGenes())
         }
-        //print(((c1 * notSimilar) / N) + (c2 * weightDifference))
         return ((c1 * notSimilar) / N) + (c2 * weightDifference)
         
     }
@@ -177,7 +176,7 @@ public class Network {
         
         var flushCount: Int = 0
         
-        if type == RunType.snapshot {
+        if type == RunType.active {
             flushCount = self.population[genome].phenotype.depth
         } else {
             flushCount = 1
@@ -197,6 +196,7 @@ public class Network {
             // Set bias to 1
             self.population[genome].phenotype.neurons[cNeuron].output = 1.0
             cNeuron += 1
+            
             while cNeuron < self.population[genome].phenotype.neurons.count {
                 var sum: Double = 0
                 for lnk in 0..<self.population[genome].phenotype.neurons[cNeuron].incommingLinks.count {
@@ -204,14 +204,6 @@ public class Network {
                     let neuronOutput: Double = self.population[genome].phenotype.neurons[cNeuron].incommingLinks[lnk].neuron_in.output
                     sum += weight * neuronOutput
                 }
-                /*
-                 if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.hidden || self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.input {
-                 self.population[genome].phenotype.neurons[cNeuron].output = SigmoidS(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
-                 } else {
-                 self.population[genome].phenotype.neurons[cNeuron].output = Sigmoid(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
-                 }
-                 */
-                //let type = ActivationType.sigmoid
                 let type = self.population[genome].phenotype.neurons[cNeuron].activationType
                 switch type {
                 case ActivationType.sigmoid:
@@ -230,22 +222,6 @@ public class Network {
                     self.population[genome].phenotype.neurons[cNeuron].output = Square(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
                 }
                 
-                /*
-                 self.population[genome].phenotype.neurons[cNeuron].output = Sigmoid(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
-                 */
-                /*
-                 if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.output {
-                 self.population[genome].phenotype.neurons[cNeuron].output = Sigmoid(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
-                 }
-                 
-                 if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.input {
-                 self.population[genome].phenotype.neurons[cNeuron].output = Add(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
-                 }
-                 
-                 if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.bias {
-                 self.population[genome].phenotype.neurons[cNeuron].output = Add(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
-                 }
-                 */
                 if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.output {
                     outputs += [self.population[genome].phenotype.neurons[cNeuron].output]
                 }
@@ -262,8 +238,6 @@ public class Network {
         }
         
         self.population[genome].phenotype.clear()
-        
-        
         
         return outputs
     }

@@ -21,9 +21,9 @@ public struct Neat {
     public var currentFitnessScore = 0.0
     
     // Run the genome
-    public mutating func run(input: Double...) -> [Double] {
+    public mutating func run(input: Double..., snapshot: Bool) -> [Double] {
         var depth: Int = 1
-        var lowestPosition: Double = 1000000
+        var lowestPosition: Double = 1000
         for n in network.genomeGetNeuronGenes(index: populationIndexPos) {
             let yPos: Double = n.getYPos()
             if yPos < lowestPosition && yPos > 0 {
@@ -37,7 +37,9 @@ public struct Neat {
         network.genomeCreatePhenotype(genomeIndex: populationIndexPos, depth: depth)
         
         // Output Result
-        let output = network.update(inputs: input, type: RunType.snapshot, genome: populationIndexPos)
+        var runType = RunType.snapshot
+        if !snapshot { runType = RunType.active }
+        let output = network.update(inputs: input, type: runType, genome: populationIndexPos)
         
         return output
     }
