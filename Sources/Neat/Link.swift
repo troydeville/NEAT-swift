@@ -1,14 +1,7 @@
-//
-//  Link.swift
-//  NEAT
-//
-//  Created by Troy Deville on 7/18/17.
-//  Copyright © 2017 Troy Deville. All rights reserved.
-//
-
 import Foundation
 
-public class Link {
+
+class Link {
     
     var neuron_in: Neuron
     var neuron_out: Neuron

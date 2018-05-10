@@ -1,14 +1,7 @@
-//
-//  NeuronGene.swift
-//  Neural Network Creator
-//
-//  Created by Troy Deville on 7/16/17.
-//  Copyright © 2017 Troy Deville. All rights reserved.
-//
-
 import Foundation
 
-public enum NeuronType {
+
+enum NeuronType {
     case input
     case hidden
     case bias
@@ -16,7 +9,7 @@ public enum NeuronType {
     case none
 }
 
-public enum ActivationType {
+enum ActivationType {
     
     case add
     case sigmoid
@@ -28,7 +21,7 @@ public enum ActivationType {
     
 }
 
-public class NeuronGene {
+class NeuronGene {
     
     private var id: Int = 0
     private var type: NeuronType = NeuronType.none

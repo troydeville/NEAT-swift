@@ -1,14 +1,7 @@
-//
-//  Innovation.swift
-//  Neural Network Creator
-//
-//  Created by Troy Deville on 7/16/17.
-//  Copyright © 2017 Troy Deville. All rights reserved.
-//
-
 import Foundation
 
-public class Innovation {
+
+class Innovation {
     
     private var innovationID: Int
     private var neuronIn: Int

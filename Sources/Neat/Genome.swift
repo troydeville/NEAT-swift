@@ -1,18 +1,11 @@
-//
-//  Genome.swift
-//  Neural Network Creator
-//
-//  Created by Troy Deville on 7/16/17.
-//  Copyright © 2017 Troy Deville. All rights reserved.
-//
-
 import Foundation
 
-public func random() -> Double {
+
+func random() -> Double {
     return (Double(arc4random()) / Double(UINT32_MAX))
 }
 
-public func randomWeight() -> Double {
+func randomWeight() -> Double {
     if random() < 0.5 {
         return random()
     } else {
@@ -20,14 +13,14 @@ public func randomWeight() -> Double {
     }
 }
 
-public func randomInt(min: Int, max: Int) -> Int {
-    if max < min {
+func randomInt(min: Int, max: Int) -> Int {
+    if max < 0 {
         return 0
     }
     return min + Int(arc4random_uniform(UInt32((max + 1) - min)))
 }
 
-public class Genome {
+class Genome {
     
     private var id: Int = 0
     private lazy var neuronGenes: [NeuronGene] = [NeuronGene]()
@@ -59,10 +52,10 @@ public class Genome {
         var xPosition: Double = 0
         /* Neurons */
         for id in 1...inputs {
-            neuronGenes += [NeuronGene(id: id, type: NeuronType.input, x: xPosition, y: 0, rec: false, response: 1.0, activationType: ActivationType.sigmoid)]
+            neuronGenes += [NeuronGene(id: id, type: NeuronType.input, x: xPosition, y: 0, rec: false, response: 1.0, activationType: ActivationType.relu)]
             xPosition += 100
         }
-        neuronGenes += [NeuronGene(id: inputs + 1, type: NeuronType.bias, x: -200, y: 250, rec: false, response: 1.0, activationType: ActivationType.sigmoid)]
+        neuronGenes += [NeuronGene(id: inputs + 1, type: NeuronType.bias, x: -200, y: 250, rec: false, response: 1.0, activationType: ActivationType.relu)]
         for id in (inputs + 2)...(outputs + inputs + 1) {
             neuronGenes += [NeuronGene(id: id, type: NeuronType.output, x: Double(inputs) * 25 + nPos, y: 200, rec: false, response: 1.0, activationType: ActivationType.sigmoid)]
             nPos += 100
@@ -94,12 +87,12 @@ public class Genome {
             self.neuronGenes += [NeuronGene(id: n.getId(), type: n.getType(), x: n.getXPos(), y: n.getYPos(), rec: n.isRecurrent(), response: n.getActivationResponse(), activationType: n.getActivationType())]
         }
         
-        self.neuronGenes.sort { n1, n2 in
-            n1.getId() < n2.getId()
+        self.neuronGenes.sort { ng1, ng2 in
+            ng1.getId() < ng2.getId()
         }
         
-        self.linkGenes.sort { l1, l2 in
-            l1.getInnovation() < l2.getInnovation()
+        self.linkGenes.sort { lg1, lg2 in
+            lg1.getInnovation() < lg2.getInnovation()
         }
         
     }
@@ -179,15 +172,15 @@ public class Genome {
         return false
     }
     /*
-    func getNeuronPosition(id: Int) -> Int {
-        for (i, neuron) in self.neuronGenes.enumerated() {
-            if neuron.getId() == id {
-                return i
-            }
-        }
-        return -1
-    }
-    */
+     func getNeuronPosition(id: Int) -> Int {
+     for (i, neuron) in self.neuronGenes.enumerated() {
+     if neuron.getId() == id {
+     return i
+     }
+     }
+     return -1
+     }
+     */
     func getNeuronPosition(id: Int) -> Int {
         for i in 0..<self.neuronGenes.count {
             if neuronGenes[i].getId() == id {
@@ -202,17 +195,9 @@ public class Genome {
         for l in 0..<self.linkGenes.count {
             if random() < mutationRate {
                 if random() < 0.5 {
-                    if random() < 0.9 {
-                        self.linkGenes[l].pertubeWeight(amount: amount)
-                    } else {
-                        self.linkGenes[l].newRandomWeight()
-                    }
+                    self.linkGenes[l].pertubeWeight(amount: amount)
                 } else {
-                    if random() < 0.9 {
-                        self.linkGenes[l].pertubeWeight(amount: -amount)
-                    } else {
-                        self.linkGenes[l].newRandomWeight()
-                    }
+                    self.linkGenes[l].pertubeWeight(amount: -amount)
                 }
                 
             }
@@ -276,7 +261,7 @@ public class Genome {
                 if (neuron2_type == NeuronType.input) || (neuron2_type == NeuronType.bias) {
                     continue
                 }
- 
+                
                 if !(duplicateLink(neuronID1: neuron1_id, neuronID2: neuron2_id)) || (neuron1_id == neuron2_id) {
                     break
                 } else {
@@ -333,8 +318,8 @@ public class Genome {
                 let fromNeuron: Int = self.linkGenes[chosenLink].getFrom()
                 
                 if (self.linkGenes[chosenLink].isEnabled()) &&
-                        (!self.linkGenes[chosenLink].isRecurrent()) &&
-                        (self.neuronGenes[getNeuronPosition(id: fromNeuron)].getType() != NeuronType.bias)
+                    (!self.linkGenes[chosenLink].isRecurrent()) &&
+                    (self.neuronGenes[getNeuronPosition(id: fromNeuron)].getType() != NeuronType.bias)
                 {
                     done = true
                     break
@@ -501,7 +486,7 @@ public class Genome {
             if self.linkGenes[link].isEnabled() {
                 var element: Int = getNeuronPosition(id: self.linkGenes[link].getFrom())
                 let fromNeuron: Neuron = neurons[element]
-
+                
                 element = getNeuronPosition(id: self.linkGenes[link].getTo())
                 let toNeuron: Neuron = neurons[element]
                 let tmplink: Link = Link(w: self.linkGenes[link].getWeight(), n_in: fromNeuron, n_out: toNeuron, rec: self.linkGenes[link].isRecurrent())
@@ -518,14 +503,14 @@ public class Genome {
     }
     
     func sortLinkGenesByInnovation() {
-        self.linkGenes.sort { l1, l2 in
-            l1.getInnovation() < l2.getInnovation()
+        self.linkGenes.sort { lg1, lg2 in
+            lg1.getInnovation() < lg2.getInnovation()
         }
     }
     
     func sort() {
-        self.neuronGenes.sort { n1, n2 in
-            n1.getId() < n2.getId()
+        self.neuronGenes.sort { ng1, ng2 in
+            ng1.getId() < ng2.getId()
         }
         sortLinkGenesByInnovation()
     }

@@ -1,24 +1,17 @@
-//
-//  CGA.swift
-//  Neural Network Creator
-//
-//  Created by Troy Deville on 7/17/17.
-//  Copyright © 2017 Troy Deville. All rights reserved.
-//
-
 import Foundation
 
-public enum Parent {
+
+enum Parent {
     case mom
     case dad
 }
 
-public enum RunType {
+enum RunType {
     case snapshot
     case active
 }
 
-public func randomActivationType() -> ActivationType {
+func randomActivationType() -> ActivationType {
     switch randomInt(min: 1, max: 7) {
     case 1:
         return ActivationType.add
@@ -38,44 +31,44 @@ public func randomActivationType() -> ActivationType {
     }
 }
 
-public func Add(x: Double, response: Double) -> Double {
+func Add(x: Double, response: Double) -> Double {
     return x + response
 }
 
-public func Sigmoid(x: Double, response: Double) -> Double {
+func Sigmoid(x: Double, response: Double) -> Double {
     return 1 / (1 + exp((-1 * response) * x))
 }
 
-public func Tanh(x: Double, response: Double) -> Double {
+func Tanh(x: Double, response: Double) -> Double {
     return tanh(x * response)
 }
 
-public func Relu(x: Double, response: Double) -> Double {
+func Relu(x: Double, response: Double) -> Double {
     if x <= 0.0 {
         return 0.0
     }
     return x * response
 }
 
-public func Sine(x: Double, response: Double) -> Double {
+func Sine(x: Double, response: Double) -> Double {
     return sin(x * response)
 }
 
-public func Abs(x: Double, response: Double) -> Double {
+func Abs(x: Double, response: Double) -> Double {
     return abs(x * response)
 }
 
-public func Square(x: Double, response: Double) -> Double {
+func Square(x: Double, response: Double) -> Double {
     return x * x * response
 }
 
-public func SigmoidS(x: Double, response: Double) -> Double {
+func SigmoidS(x: Double, response: Double) -> Double {
     return (sinh(x + response) / cosh(x + response))
     //return 1 / (1 + exp(-response * x))
     //return sin(response * x)
 }
 
-public class Network {
+class Network {
     
     private var database: Database
     private var species: [Species] = [Species]()
@@ -100,11 +93,11 @@ public class Network {
         /* Neurons */
         for _ in 1...inputs {
             //neuronGenes += [NeuronGene(id: id, type: NeuronType.input, x: 0, y: 0, rec: false, response: 1.0)]
-            let _ = database.createNewNodeInnovation(from: -1, to: -1, type: NeuronType.input, activationType: ActivationType.sigmoid, xPos: xPosition, yPos: 0)
+            let _ = database.createNewNodeInnovation(from: -1, to: -1, type: NeuronType.input, activationType: ActivationType.relu, xPos: xPosition, yPos: 0)
             xPosition += 100
         }
         //neuronGenes += [NeuronGene(id: inputs + 1, type: NeuronType.bias, x: 0, y: 0, rec: false, response: 1.0)]
-        let _ = database.createNewNodeInnovation(from: -1, to: -1, type: NeuronType.bias, activationType: ActivationType.sigmoid, xPos: -200, yPos: 250)
+        let _ = database.createNewNodeInnovation(from: -1, to: -1, type: NeuronType.bias, activationType: ActivationType.relu, xPos: -200, yPos: 250)
         for _ in (inputs + 2)...(outputs + inputs + 1) {
             //neuronGenes += [NeuronGene(id: id, type: NeuronType.output, x: 10 / , y: 0, rec: false, response: 1.0)]
             let _ = database.createNewNodeInnovation(from: -1, to: -1, type: NeuronType.output, activationType: ActivationType.sigmoid, xPos: Double(inputs) * 25 + nPos, yPos: 200)
@@ -137,7 +130,7 @@ public class Network {
         self.population[genomeIndex].createPhenotype(depth: depth)
     }
     
-    func setGenomeFitness(index: Int, fitness: Double) {
+    func genomeSetFitness(index: Int, fitness: Double) {
         population[index].setFitness(fit: fitness)
     }
     
@@ -212,12 +205,12 @@ public class Network {
                     sum += weight * neuronOutput
                 }
                 /*
-                if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.hidden || self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.input {
-                    self.population[genome].phenotype.neurons[cNeuron].output = SigmoidS(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
-                } else {
-                    self.population[genome].phenotype.neurons[cNeuron].output = Sigmoid(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
-                }
-*/
+                 if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.hidden || self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.input {
+                 self.population[genome].phenotype.neurons[cNeuron].output = SigmoidS(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
+                 } else {
+                 self.population[genome].phenotype.neurons[cNeuron].output = Sigmoid(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
+                 }
+                 */
                 //let type = ActivationType.sigmoid
                 let type = self.population[genome].phenotype.neurons[cNeuron].activationType
                 switch type {
@@ -238,21 +231,21 @@ public class Network {
                 }
                 
                 /*
-                self.population[genome].phenotype.neurons[cNeuron].output = Sigmoid(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
+                 self.population[genome].phenotype.neurons[cNeuron].output = Sigmoid(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
                  */
                 /*
-                if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.output {
-                    self.population[genome].phenotype.neurons[cNeuron].output = Sigmoid(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
-                }
- 
-                if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.input {
-                    self.population[genome].phenotype.neurons[cNeuron].output = Add(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
-                }
-                
-                if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.bias {
-                    self.population[genome].phenotype.neurons[cNeuron].output = Add(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
-                }
- */
+                 if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.output {
+                 self.population[genome].phenotype.neurons[cNeuron].output = Sigmoid(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
+                 }
+                 
+                 if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.input {
+                 self.population[genome].phenotype.neurons[cNeuron].output = Add(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
+                 }
+                 
+                 if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.bias {
+                 self.population[genome].phenotype.neurons[cNeuron].output = Add(x: sum, response: self.population[genome].phenotype.neurons[cNeuron].activationResponse)
+                 }
+                 */
                 if self.population[genome].phenotype.neurons[cNeuron].type == NeuronType.output {
                     outputs += [self.population[genome].phenotype.neurons[cNeuron].output]
                 }
@@ -267,7 +260,7 @@ public class Network {
                 self.population[genome].phenotype.neurons[n].output = 0
             }
         }
-
+        
         self.population[genome].phenotype.clear()
         
         
@@ -309,8 +302,8 @@ public class Network {
     func epoch() {
         
         // Sort the population by fitness score
-        self.population.sort { g1, g2 in
-            g1.getFitness() > g2.getFitness()
+        self.population.sort { p0, p1 in
+            p0.getFitness() > p1.getFitness()
         }
         
         // Assign individual to a species
@@ -366,9 +359,9 @@ public class Network {
             }
             speciesRemoved = false
         }
- 
+        
         self.population.removeAll()
- 
+        
         
         for s in 0..<self.species.count {
             let genomes: [Genome] = self.species[s].getGenomePool()
@@ -393,7 +386,7 @@ public class Network {
             }
             
         }
- 
+        
         while self.population.count < database.getPopulation() {
             self.population += [population[0]]
         }

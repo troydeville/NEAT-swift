@@ -1,14 +1,7 @@
-//
-//  Database.swift
-//  Neural Network Creator
-//
-//  Created by Troy Deville on 7/17/17.
-//  Copyright © 2017 Troy Deville. All rights reserved.
-//
-
 import Foundation
 
-public class Database {
+
+class Database {
     
     private var innovationNumber = 1
     private var neuronID: Int = 1
@@ -17,7 +10,7 @@ public class Database {
     private var innovations: [Innovation] = [Innovation]()
     
     let nodeMutChance: Double = 0.03
-    let connectionMutChance: Double = 0.18
+    let connectionMutChance: Double = 0.15
     let weightMutChance: Double = 0.80
     let activationMutChance: Double = 0.1
     let weightPertubeAmount: Double = 0.3
@@ -35,10 +28,10 @@ public class Database {
     }
     
     /*
-    init(inputs: Int, outputs: Int) {
-        self.neuronID = inputs + outputs
-    }
-    */
+     init(inputs: Int, outputs: Int) {
+     self.neuronID = inputs + outputs
+     }
+     */
     
     func checkInnovation(id_1: Int, id_2: Int, neuronID: Int) -> Int {
         for inov in innovations {

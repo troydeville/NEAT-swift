@@ -1,16 +1,7 @@
-//
-//  NeuralNet.swift
-//  NEAT
-//
-//  Created by Troy Deville on 7/18/17.
-//  Copyright © 2017 Troy Deville. All rights reserved.
-//
-
 import Foundation
 
 
-
-public class NeuralNet {
+class NeuralNet {
     
     private var neurons: [Neuron]
     private var depth: Int
@@ -77,10 +68,3 @@ public class NeuralNet {
     }
     
 }
-
-
-
-
-
-
-

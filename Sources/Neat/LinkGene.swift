@@ -1,14 +1,7 @@
-//
-//  LinkGene.swift
-//  Neural Network Creator
-//
-//  Created by Troy Deville on 7/16/17.
-//  Copyright © 2017 Troy Deville. All rights reserved.
-//
-
 import Foundation
 
-public class LinkGene {
+
+class LinkGene {
     
     private var from: Int = 0
     private var to: Int = 0
@@ -38,14 +31,6 @@ public class LinkGene {
             self.weight = -100
         }
         
-    }
-    
-    func newRandomWeight() {
-        if random() < 0.5 {
-            self.weight = random()
-        } else {
-            self.weight = -random()
-        }
     }
     
     func getFrom() -> Int {

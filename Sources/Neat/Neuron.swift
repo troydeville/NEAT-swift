@@ -1,14 +1,7 @@
-//
-//  Neuron.swift
-//  NEAT
-//
-//  Created by Troy Deville on 7/18/17.
-//  Copyright © 2017 Troy Deville. All rights reserved.
-//
-
 import Foundation
 
-public class Neuron {
+
+class Neuron {
     
     var incommingLinks: [Link] = [Link]()
     var outgoingLinks: [Link] = [Link]()
@@ -59,14 +52,6 @@ public class Neuron {
     }
     
     func clear() {
-        /*
-        while self.incommingLinks.count > 0 {
-            self.incommingLinks.last!.clear()
-        }
-        while self.outgoingLinks.count > 0 {
-            self.outgoingLinks.last!.clear()
-        }
- */
         removeIncomingOutgoing()
     }
     

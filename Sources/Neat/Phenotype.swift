@@ -1,14 +1,7 @@
-//
-//  Phenotype.swift
-//  NEAT
-//
-//  Created by Troy Deville on 7/18/17.
-//  Copyright © 2017 Troy Deville. All rights reserved.
-//
-
 import Foundation
 
-public class Phenotype {
+
+class Phenotype {
     
     var depth: Int = 0
     var neurons: [Neuron] = [Neuron]()
@@ -18,11 +11,6 @@ public class Phenotype {
     init(depth: Int, neurons: [Neuron]) {
         self.depth = depth
         self.neurons.removeAll()
-        /*
-        for n in 0..<neurons.count {
-            self.neurons += [Neuron(neuron: neurons[n])]
-        }
- */
         self.neurons = neurons
     }
     

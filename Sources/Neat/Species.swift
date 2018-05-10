@@ -1,14 +1,7 @@
-//
-//  Species.swift
-//  Neural Network Creator
-//
-//  Created by Troy Deville on 7/17/17.
-//  Copyright © 2017 Troy Deville. All rights reserved.
-//
-
 import Foundation
 
-public class Species {
+
+class Species {
     
     private var leader: Genome = Genome()
     private var organisms: [Genome] = [Genome]()
@@ -36,8 +29,8 @@ public class Species {
     
     func addMember(organism: Genome) {
         self.organisms += [organism]
-        organisms.sort { g1, g2 in
-            g1.getFitness() > g2.getFitness()
+        organisms.sort { o1, o2 in
+            o1.getFitness() > o2.getFitness()
         }
         if organism.getFitness() > self.bestFitness {
             self.bestFitness = organism.getFitness()
@@ -118,20 +111,20 @@ public class Species {
             }
             self.organisms += children
             
-            self.organisms.sort { g1, g2 in
-                g1.getFitness() > g2.getFitness()
+            self.organisms.sort { o1, o2 in
+                o1.getFitness() > o2.getFitness()
             }
             /*
-            for o in organisms {
-                print(o.toString())
-            }
+             for o in organisms {
+             print(o.toString())
+             }
              */
             
             let randILeadIdx: Int = randomInt(min: 0, max: organisms.count - removeAmount)
             
             self.setLeader(organism: organisms[randILeadIdx])
         }
- 
+        
         
     }
     
@@ -181,9 +174,9 @@ public class Species {
         }
         
         if self.spawnsRequired.isNaN {
-            self.spawnsRequired = Double(self.organisms.count)
+            print("ERROR")
         }
- 
+        
     }
     
     func getSpawnAmount() -> Int {
@@ -317,8 +310,8 @@ public class Species {
     }
     
     func sortGenomes() {
-        self.organisms.sort { g1, g2 in
-            g1.getFitness() > g2.getFitness()
+        self.organisms.sort { o1, o2 in
+            o1.getFitness() > o2.getFitness()
         }
     }
     
