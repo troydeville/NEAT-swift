@@ -1,11 +1,11 @@
 import Foundation
 
 
-func random() -> Double {
+public func random() -> Double {
     return (Double(arc4random()) / Double(UINT32_MAX))
 }
 
-func randomWeight() -> Double {
+public func randomWeight() -> Double {
     if random() < 0.5 {
         return random()
     } else {
@@ -13,14 +13,14 @@ func randomWeight() -> Double {
     }
 }
 
-func randomInt(min: Int, max: Int) -> Int {
+public func randomInt(min: Int, max: Int) -> Int {
     if max < 0 {
         return 0
     }
     return min + Int(arc4random_uniform(UInt32((max + 1) - min)))
 }
 
-class Genome {
+public class Genome {
     
     private var id: Int = 0
     private lazy var neuronGenes: [NeuronGene] = [NeuronGene]()

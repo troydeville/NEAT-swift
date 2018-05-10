@@ -1,7 +1,7 @@
 import Foundation
 
 
-class Link {
+public class Link {
     
     var neuron_in: Neuron
     var neuron_out: Neuron

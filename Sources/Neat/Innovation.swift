@@ -1,7 +1,7 @@
 import Foundation
 
 
-class Innovation {
+public class Innovation {
     
     private var innovationID: Int
     private var neuronIn: Int

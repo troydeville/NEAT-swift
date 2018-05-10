@@ -1,7 +1,7 @@
 import Foundation
 
 
-class Neuron {
+public class Neuron {
     
     var incommingLinks: [Link] = [Link]()
     var outgoingLinks: [Link] = [Link]()

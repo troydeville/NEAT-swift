@@ -1,7 +1,7 @@
 import Foundation
 
 
-class Phenotype {
+public class Phenotype {
     
     var depth: Int = 0
     var neurons: [Neuron] = [Neuron]()

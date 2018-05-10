@@ -1,17 +1,17 @@
 import Foundation
 
 
-enum Parent {
+public enum Parent {
     case mom
     case dad
 }
 
-enum RunType {
+public enum RunType {
     case snapshot
     case active
 }
 
-func randomActivationType() -> ActivationType {
+public func randomActivationType() -> ActivationType {
     switch randomInt(min: 1, max: 7) {
     case 1:
         return ActivationType.add
@@ -31,44 +31,44 @@ func randomActivationType() -> ActivationType {
     }
 }
 
-func Add(x: Double, response: Double) -> Double {
+public func Add(x: Double, response: Double) -> Double {
     return x + response
 }
 
-func Sigmoid(x: Double, response: Double) -> Double {
+public func Sigmoid(x: Double, response: Double) -> Double {
     return 1 / (1 + exp((-1 * response) * x))
 }
 
-func Tanh(x: Double, response: Double) -> Double {
+public func Tanh(x: Double, response: Double) -> Double {
     return tanh(x * response)
 }
 
-func Relu(x: Double, response: Double) -> Double {
+public func Relu(x: Double, response: Double) -> Double {
     if x <= 0.0 {
         return 0.0
     }
     return x * response
 }
 
-func Sine(x: Double, response: Double) -> Double {
+public func Sine(x: Double, response: Double) -> Double {
     return sin(x * response)
 }
 
-func Abs(x: Double, response: Double) -> Double {
+public func Abs(x: Double, response: Double) -> Double {
     return abs(x * response)
 }
 
-func Square(x: Double, response: Double) -> Double {
+public func Square(x: Double, response: Double) -> Double {
     return x * x * response
 }
 
-func SigmoidS(x: Double, response: Double) -> Double {
+public func SigmoidS(x: Double, response: Double) -> Double {
     return (sinh(x + response) / cosh(x + response))
     //return 1 / (1 + exp(-response * x))
     //return sin(response * x)
 }
 
-class Network {
+public class Network {
     
     private var database: Database
     private var species: [Species] = [Species]()
@@ -130,7 +130,7 @@ class Network {
         self.population[genomeIndex].createPhenotype(depth: depth)
     }
     
-    func genomeSetFitness(index: Int, fitness: Double) {
+    func setGenomeFitness(index: Int, fitness: Double) {
         population[index].setFitness(fit: fitness)
     }
     

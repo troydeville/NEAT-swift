@@ -1,7 +1,7 @@
 import Foundation
 
 
-enum NeuronType {
+public enum NeuronType {
     case input
     case hidden
     case bias
@@ -9,7 +9,7 @@ enum NeuronType {
     case none
 }
 
-enum ActivationType {
+public enum ActivationType {
     
     case add
     case sigmoid
@@ -21,7 +21,7 @@ enum ActivationType {
     
 }
 
-class NeuronGene {
+public class NeuronGene {
     
     private var id: Int = 0
     private var type: NeuronType = NeuronType.none
