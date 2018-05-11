@@ -67,9 +67,7 @@ public class Genome {
                 linkGenes += [LinkGene(i: i, o: o, w: randomWeight(), en: true, inov: inovTemp, rec: false)]
                 inovTemp += 1
             }
-        }
-        
-        
+        } 
         
     }
     
@@ -518,8 +516,6 @@ public class Genome {
     }
     
 }
-
-
 
 extension Genome: Comparable {
     public static func < (lhs: Genome, rhs: Genome) -> Bool {

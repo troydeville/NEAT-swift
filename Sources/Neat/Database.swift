@@ -10,7 +10,7 @@ public class Database {
     private var innovations: [Innovation] = [Innovation]()
     
     let nodeMutChance: Double = 0.03
-    let connectionMutChance: Double = 0.15
+    let connectionMutChance: Double = 0.07
     let weightMutChance: Double = 0.80
     let activationMutChance: Double = 0.1
     let weightPertubeAmount: Double = 0.3
