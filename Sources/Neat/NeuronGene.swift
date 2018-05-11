@@ -99,3 +99,13 @@ public class NeuronGene {
     }
     
 }
+
+extension NeuronGene: Comparable {
+    public static func < (lhs: NeuronGene, rhs: NeuronGene) -> Bool {
+        return lhs.id < rhs.id
+    }
+    
+    public static func == (lhs: NeuronGene, rhs: NeuronGene) -> Bool {
+        return lhs.id == rhs.id
+    }
+}

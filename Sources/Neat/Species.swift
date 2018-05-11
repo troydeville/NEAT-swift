@@ -29,9 +29,7 @@ public class Species {
     
     func addMember(organism: Genome) {
         self.organisms += [organism]
-        organisms.sort { o1, o2 in
-            o1.getFitness() > o2.getFitness()
-        }
+        organisms.sort()
         if organism.getFitness() > self.bestFitness {
             self.bestFitness = organism.getFitness()
         }
@@ -111,9 +109,7 @@ public class Species {
             }
             self.organisms += children
             
-            self.organisms.sort { o1, o2 in
-                o1.getFitness() > o2.getFitness()
-            }
+            self.organisms.sort()
             /*
              for o in organisms {
              print(o.toString())
@@ -310,9 +306,7 @@ public class Species {
     }
     
     func sortGenomes() {
-        self.organisms.sort { o1, o2 in
-            o1.getFitness() > o2.getFitness()
-        }
+        self.organisms.sort()
     }
     
     func toString() -> String {

@@ -4,6 +4,7 @@ public struct Neat {
     
     public init(inputs: Int, outputs: Int, population: Int) {
         network = Network(inputs: inputs, outputs: outputs, population: population)
+        print("Network initiated.")
     }
     
     // Network's inputs

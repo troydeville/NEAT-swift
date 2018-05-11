@@ -87,13 +87,8 @@ public class Genome {
             self.neuronGenes += [NeuronGene(id: n.getId(), type: n.getType(), x: n.getXPos(), y: n.getYPos(), rec: n.isRecurrent(), response: n.getActivationResponse(), activationType: n.getActivationType())]
         }
         
-        self.neuronGenes.sort { ng1, ng2 in
-            ng1.getId() < ng2.getId()
-        }
-        
-        self.linkGenes.sort { lg1, lg2 in
-            lg1.getInnovation() < lg2.getInnovation()
-        }
+        self.neuronGenes.sort()
+        self.linkGenes.sort()
         
     }
     
@@ -502,19 +497,12 @@ public class Genome {
         self.phenotype.clear()
     }
     
-    func sortLinkGenesByInnovation() {
-        self.linkGenes.sort { lg1, lg2 in
-            lg1.getInnovation() < lg2.getInnovation()
-        }
-    }
-    
+    /*
     func sort() {
-        self.neuronGenes.sort { ng1, ng2 in
-            ng1.getId() < ng2.getId()
-        }
-        sortLinkGenesByInnovation()
+        self.neuronGenes.sort()
+        self.linkGenes.sort()
     }
-    
+    */
     func toString() -> String {
         var s = "Genome:\nid: \(self.id), fitness: \(self.fitness), neurons: \(self.neuronGenes.count), links: \(numGenes())\n"
         s += "Links:\n"
@@ -533,7 +521,16 @@ public class Genome {
 
 
 
-
+extension Genome: Comparable {
+    public static func < (lhs: Genome, rhs: Genome) -> Bool {
+        return lhs.fitness > rhs.fitness
+    }
+    
+    public static func == (lhs: Genome, rhs: Genome) -> Bool {
+        return lhs.fitness == rhs.fitness
+    }
+    
+}
 
 
 

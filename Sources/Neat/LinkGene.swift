@@ -74,3 +74,13 @@ public class LinkGene {
     }
     
 }
+
+extension LinkGene: Comparable {
+    public static func < (lhs: LinkGene, rhs: LinkGene) -> Bool {
+        return lhs.innovation < rhs.innovation
+    }
+    
+    public static func == (lhs: LinkGene, rhs: LinkGene) -> Bool {
+        return lhs.innovation == rhs.innovation
+    }
+}
