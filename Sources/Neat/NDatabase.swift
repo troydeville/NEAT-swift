@@ -90,24 +90,23 @@ public class NDatabase {
     }
     
     func getLinkDataFromComparison(nodeFrom: Int, nodeTo: Int) -> [Int] {
-        let linkIds = self.linkInnovations.inorderArrayFromKeys
+        //let linkIds = self.linkInnovations.inorderArrayFromKeys
         
         var nodesToCheck = [Int]()
         
         var linksFrom = [NLinkInnovation]()
         var linksTo = [NLinkInnovation]()
-        
-        for key in linkIds {
-            let linkInov = self.linkInnovations.value(for: key)!
-            if linkInov.nIn == nodeFrom {
-                linksFrom += [linkInov]
+
+        self.linkInnovations.traverseKeysInOrder { key in
+            
+            let linkInov1 = self.linkInnovations.value(for: key)!
+            if linkInov1.nIn == nodeFrom {
+                linksFrom += [linkInov1]
             }
-        }
-        
-        for key in linkIds {
-            let linkInov = self.linkInnovations.value(for: key)!
-            if linkInov.nOut == nodeTo {
-                linksTo += [linkInov]
+            
+            let linkInov2 = self.linkInnovations.value(for: key)!
+            if linkInov2.nOut == nodeTo {
+                linksTo += [linkInov2]
             }
         }
         
@@ -125,14 +124,21 @@ public class NDatabase {
     }
     
     func getInnovationId(from: Int, to: Int) -> Int {
-        let linkKeys = self.linkInnovations.inorderArrayFromKeys
-        for key in linkKeys {
-            let link = self.linkInnovations.value(for: key)!
-            if (link.nIn == from) && (link.nOut == to) { // Innovation exists
-                return link.innovationID
+        //let linkKeys = self.linkInnovations.inorderArrayFromKeys
+        
+        var linkIdentification = -1
+        var search = true
+        self.linkInnovations.traverseKeysInOrder { key in
+            if search {
+                let link = self.linkInnovations.value(for: key)!
+                if (link.nIn == from) && (link.nOut == to) { // Innovation exists
+                    linkIdentification = link.innovationID
+                    search = false
+                }
             }
         }
-        return -1
+
+        return linkIdentification
     }
     
 }
@@ -144,15 +150,17 @@ extension NDatabase: CustomStringConvertible {
      *  Returns details of the database
      */
     public var description: String {
-        let nodeKeys = self.nodeInnovations.inorderArrayFromKeys
+        //let nodeKeys = self.nodeInnovations.inorderArrayFromKeys
         var innovationIds = [Int]()
-        for nKey in nodeKeys {
-            innovationIds += [self.nodeInnovations.value(for: nKey)!.innovationId]
+        
+        self.nodeInnovations.traverseKeysInOrder { key in
+            innovationIds += [self.nodeInnovations.value(for: key)!.innovationId]
         }
-        let linkKeys = self.linkInnovations.inorderArrayFromKeys
-        for lKey in linkKeys {
-            innovationIds += [self.linkInnovations.value(for: lKey)!.innovationID]
+        
+        self.linkInnovations.traverseKeysInOrder { key in
+            innovationIds += [self.linkInnovations.value(for: key)!.innovationID]
         }
+
         return "\(innovationIds)"
     }
 }

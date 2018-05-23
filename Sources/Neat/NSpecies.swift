@@ -40,10 +40,8 @@ public class NSpecies {
     
     func removePopulation() {
         //reset from previous generation
-        let genomeKeys = self.genomes.inorderArrayFromKeys
-        for key in genomeKeys {
-            self.genomes.remove(key)
-        }
+        self.genomes = BTree(order: BTREEORDER)!
+        
         self.genomePool = [NGenome]()
         self.keysRemoved.removeAll()
         
@@ -54,13 +52,12 @@ public class NSpecies {
     
     func adjustFitnesses() {
         
-        let genomeKeys = self.genomes.inorderArrayFromKeys
-        let genomeAmount = Double(genomeKeys.count)
+        let genomeAmount = Double(self.genomes.numberOfKeys)
         
         var tot = 0.0
         var totFit = 0.0
         
-        for key in genomeKeys {
+        self.genomes.traverseKeysInOrder { key in
             let genome = genomes.value(for: key)!
             
             totFit += genome.fitness
@@ -75,6 +72,7 @@ public class NSpecies {
                 self.bestFitness = genome.fitness
             }
         }
+
         let newAverageFitness = totFit/genomeAmount
         //let newAverageFitness = totFit/Double(self.database.population)
         
@@ -86,15 +84,13 @@ public class NSpecies {
         self.averageFitness = newAverageFitness
         self.averageAdjustedFitness = tot/genomeAmount
         
-        //print("BEST: \(bestFitness)")
-        
     }
     
     func setSpawnAmounts() {
-        let genomeKeys = self.genomes.inorderArrayFromKeys
         var tot = 0.0
         var varianceSum = 0.0
-        for key in genomeKeys {
+        
+        self.genomes.traverseKeysInOrder { key in
             let genome = genomes.value(for: key)!
             tot += genome.adjustedFitness / averageAdjustedFitness
             varianceSum += (genome.fitness-self.averageFitness)*(genome.fitness-self.averageFitness)
@@ -103,7 +99,7 @@ public class NSpecies {
         
         //print("Amount to spawn: \(amountToSpawn)")
         
-        self.variance = varianceSum / Double(genomeKeys.count)
+        self.variance = varianceSum / Double(self.genomes.numberOfKeys)
     }
     
     func removeLowestPerformingMembers() {
@@ -126,20 +122,13 @@ public class NSpecies {
             }
         }
         
-        //print("Average fitness: \(self.averageFitness)\nFitness Variance: \(self.variance)")
     }
     
     func replaceMissingGenomes(database: NDatabase) {
         
         let removedGenomeAmount = self.keysRemoved.count
         
-        //print("\nSpecies Actual Amount removed: \(removedGenomeAmount)\n")
-        
         var remainingMemberKeys = self.genomes.inorderArrayFromKeys
-        
-        //print("Remaining member: \(remainingMemberKeys.count)")
-        
-        
         
         /* Every child created has the chance to be mutated. */
         if removedGenomeAmount > 0 && remainingMemberKeys.count > 1 {
@@ -167,9 +156,10 @@ public class NSpecies {
             //print("Amount to remove: \(removedGenomeAmount)")
             for _ in 1...removedGenomeAmount {
                 let kingLinks = self.getLeader().getLinks()
-                let linkKeys = kingLinks.inorderArrayFromKeys
+                //let linkKeys = kingLinks.inorderArrayFromKeys
                 let newLinks: BTree<Int, NLink> = BTree(order: BTREEORDER)!
-                for key in linkKeys {
+                
+                kingLinks.traverseKeysInOrder { key in
                     let kingLink = kingLinks.value(for: key)!
                     let newChildlink = NLink(innovation: kingLink.innovation, to: kingLink.to, from: kingLink.from)
                     newLinks.insert(newChildlink, for: newChildlink.innovation)
@@ -202,7 +192,6 @@ public class NSpecies {
     }
     
     private func crossOver(g1: NGenome, g2: NGenome, database: NDatabase) -> NGenome {
-        
         /**
          At this point, it is unclear if I should make the child weights the same as the parents it got it from.
          In this current implementation, a new link is created and has the default of creating a random weight.
@@ -212,9 +201,6 @@ public class NSpecies {
         
         var childNodes = [NNode]()
         
-        //print("\n\n\n\n\n\nTHIS IS THE CHILD NODES: ")
-        //print(g1.nodes)
-        //print(g2.nodes)
         let childLinks: BTree<Int, NLink> = BTree(order: BTREEORDER)!
         
         let g1Innovations = g1.getInnovations(database: database)

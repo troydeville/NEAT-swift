@@ -12,14 +12,14 @@ public struct NNetwork {
         self.links = genome.getLinks()
         self.nodeIds.removeAll()
         
-        for node in genome.getNodes() {
+        let allNodes = genome.getNodes()
+        
+        let _ = allNodes.map { node in
             self.nodes.insert(node, for: node.id)
         }
         
-        for l in self.links.inorderArrayFromKeys {
-            let link = self.links.value(for: l)!
-            
-            //print("\(link.from):\(link.to)")
+        self.links.traverseKeysInOrder { key in
+            let link = self.links.value(for: key)!
             
             var fromNode = self.nodes.value(for: link.from)!
             fromNode.appendOutgoingLink(link: link)
@@ -66,11 +66,11 @@ public struct NNetwork {
                 cNeuron += 1
             }
             
-            while cNeuron < nodes.inorderArrayFromKeys.count {
+            while cNeuron < nodeIds.count {
                 var sum = 0.0
-                let linkKeys = self.links.inorderArrayFromKeys
-                for lnk in linkKeys {
-                    let link = self.links.value(for: lnk)!
+                
+                self.links.traverseKeysInOrder { key in
+                    let link = self.links.value(for: key)!
                     let weight = link.weight
                     
                     // get node output from link_from_nodeID
@@ -79,39 +79,39 @@ public struct NNetwork {
                     
                     sum += weight * output
                 }
-                let nodeKeys = self.nodes.inorderArrayFromKeys
-                var node = self.nodes.value(for: nodeKeys[cNeuron])!
+
+                var node = self.nodes.value(for: nodeIds[cNeuron])!
                 
                 let type = node.activation
                 switch type {
                 case NActivation.sigmoid:
                     node.output = Sigmoid(x: sum, response: node.activationResponse)
                     nodes.remove(node.id)
-                    nodes.insert(node, for: nodeKeys[cNeuron])
+                    nodes.insert(node, for: nodeIds[cNeuron])
                 case NActivation.add:
                     node.output = Add(x: sum, response: node.activationResponse)
                     nodes.remove(node.id)
-                    nodes.insert(node, for: nodeKeys[cNeuron])
+                    nodes.insert(node, for: nodeIds[cNeuron])
                 case NActivation.tanh:
                     node.output = Tanh(x: sum, response: node.activationResponse)
                     nodes.remove(node.id)
-                    nodes.insert(node, for: nodeKeys[cNeuron])
+                    nodes.insert(node, for: nodeIds[cNeuron])
                 case NActivation.relu:
                     node.output = Relu(x: sum, response: node.activationResponse)
                     nodes.remove(node.id)
-                    nodes.insert(node, for: nodeKeys[cNeuron])
+                    nodes.insert(node, for: nodeIds[cNeuron])
                 case NActivation.sine:
                     node.output = Sine(x: sum, response: node.activationResponse)
                     nodes.remove(node.id)
-                    nodes.insert(node, for: nodeKeys[cNeuron])
+                    nodes.insert(node, for: nodeIds[cNeuron])
                 case NActivation.abs:
                     node.output = Abs(x: sum, response: node.activationResponse)
                     nodes.remove(node.id)
-                    nodes.insert(node, for: nodeKeys[cNeuron])
+                    nodes.insert(node, for: nodeIds[cNeuron])
                 case NActivation.square:
                     node.output = Square(x: sum, response: node.activationResponse)
                     nodes.remove(node.id)
-                    nodes.insert(node, for: nodeKeys[cNeuron])
+                    nodes.insert(node, for: nodeIds[cNeuron])
                 }
                 
                 if node.type == NType.output {
@@ -124,18 +124,14 @@ public struct NNetwork {
             
             
         } ///1...flushcount
-        
-        
-        nodeIds = self.nodes.inorderArrayFromKeys
         if networkType == NetworkType.SnapShot {
-            for key in nodeIds {
+            self.nodes.traverseKeysInOrder { key in
                 var theNode = nodes.value(for: key)!
                 theNode.output = 0
                 nodes.remove(theNode.id)
                 nodes.insert(theNode, for: theNode.id)
             }
         }
-        
         
         return outputs
     }

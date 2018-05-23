@@ -1,5 +1,3 @@
-import Foundation
-
 public enum NType {
     case input
     case bias
