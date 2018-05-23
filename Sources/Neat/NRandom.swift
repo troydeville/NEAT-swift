@@ -2,7 +2,8 @@ import Foundation
 
 public func normalRandom() -> Double {
     #if os(Linux)
-    return (Double(random()) / Double(UINT32_MAX))
+    return drand48()
+    //(Double(random()) / Double(UINT32_MAX))
     #else
     return (Double(arc4random()) / Double(UINT32_MAX))
     #endif
@@ -22,7 +23,7 @@ public func randomInt(min: Int, max: Int) -> Int {
         return 0
     }
     #if os(Linux)
-    return min + Int(random() % (max + 1 - min))
+    return min + Int(random() % (max - min))
     #else
     return min + Int(arc4random_uniform(UInt32(max - min)))
     #endif

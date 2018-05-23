@@ -105,7 +105,7 @@ public class NSpecies {
         
         self.variance = varianceSum / Double(genomeKeys.count)
     }
-
+    
     func removeLowestPerformingMembers() {
         
         // remove all genomes whose fitness is less than the average fitness minus the variance
@@ -155,7 +155,10 @@ public class NSpecies {
                 let genomeA = self.genomes.value(for: remainingMemberKeys[randomKeyA])!
                 let genomeB = self.genomes.value(for: remainingMemberKeys[randomKeyB])!
                 let child = crossOver(g1: genomeA, g2: genomeB, database: database)
-                child.mutate(database: database)
+                if normalRandom() <= 0.75 {
+                    child.mutate(database: database)
+                }
+                //child.mutate(database: database)
                 self.genomes.insert(child, for: child.id)
                 self.referenceToReturnAfterRestoringTheDead += [child]
                 
@@ -179,7 +182,7 @@ public class NSpecies {
             
         }
         
-        let otherGenomesToMutateCount = round(Double(remainingMemberKeys.count) * 0.75)
+        let otherGenomesToMutateCount = round(Double(remainingMemberKeys.count) * 1)
         
         if otherGenomesToMutateCount > 1 {
             for _ in 1...Int(otherGenomesToMutateCount) {
@@ -204,7 +207,7 @@ public class NSpecies {
          At this point, it is unclear if I should make the child weights the same as the parents it got it from.
          In this current implementation, a new link is created and has the default of creating a random weight.
          Therefore, the child will have the same link but with different weights.
-        
+         
          */
         
         var childNodes = [NNode]()
@@ -439,15 +442,15 @@ public class NSpecies {
             g2Prime += [g2Inovs.last! & adiffeb.last!]
             
             /*
-            if adiffeb.last! != 0 {
-                Dis += 1
-            }
- */
+             if adiffeb.last! != 0 {
+             Dis += 1
+             }
+             */
             
             if (g1Prime.last! - g2Prime.last! > 0) || (g1Prime.last! - g2Prime.last! < 0) {
                 Dis += 1
             }
-             
+            
             
         }
         
@@ -485,4 +488,3 @@ public class NSpecies {
     }
     
 }
-

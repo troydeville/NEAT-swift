@@ -18,8 +18,8 @@ public class NDatabase {
     var activationMutation = 0.1
     var typeMutation = 0.0
     
-    var perturbAmount = 0.25
-    var activationPerturbAmount = 0.1
+    var perturbAmount = 0.333333333
+    var activationPerturbAmount = 0.333333333
     var timesToFindConnection = 15
     
     var population = 0

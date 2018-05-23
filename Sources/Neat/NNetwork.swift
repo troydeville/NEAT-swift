@@ -7,18 +7,13 @@ public struct NNetwork {
     
     var nodeIds = [Int]()
     
-    init(genome: NGenome) {
+    public init(genome: NGenome) {
         
         self.links = genome.getLinks()
         self.nodeIds.removeAll()
-        //print("NODES EHRE@!@$LK!J#KL!@JKL!J#KL")
-        //print(genome.getNodes())
         
         for node in genome.getNodes() {
             self.nodes.insert(node, for: node.id)
-            //print("\nid: \(node.id)")
-            //print("Incomming links: \(node.incommingLinks)")
-            //print("Outgoing links: \(node.outgoingLinks)\n")
         }
         
         for l in self.links.inorderArrayFromKeys {
@@ -36,123 +31,9 @@ public struct NNetwork {
         }
         
         nodeIds = self.nodes.inorderArrayFromKeys
-        //print("Node ids: \(nodeIds)")
-        //print(nodes)
     }
     
-    /*
-    
-    mutating func run(inputs: [Double], active: Bool) -> [Double] {
-        var outputs = [Double]()
-        
-        var flushCount = 0
-        
-        if active {
-            flushCount = self.getDepth()
-        } else {
-            flushCount = 1
-        }
-        
-        for _ in 1...flushCount {
-            
-            // Clear the outputs.
-            outputs.removeAll()
-            
-            for id in 0..<nodeIds.count {
-                
-                var node = self.nodes.value(for: nodeIds[id])!
-                if node.type == NType.input {
-                    node.output = Sigmoid(x: inputs[id], response: node.activationResponse) * node.outgoingLinks.first!.weight
-                    nodes.insert(node, for: nodeIds[id])
-                } else if node.type == NType.bias {
-                    node.output = Sigmoid(x: 1, response: node.activationResponse) * node.outgoingLinks.first!.weight
-                    nodes.insert(node, for: nodeIds[id])
-                } else {
-                    
-                    var sum = 0.0
-                    
-                    for link in node.incommingLinks {
-                        // Get link's weight
-                        let weight = link.weight
-                        
-                        
-                        // Get output from node this link is coming from
-                        if link.enabled {
-                            let nodeOutput = self.nodes.value(for: link.from)!.output * link.weight
-                            sum += weight * nodeOutput
-                        }
- 
-                        /*
-                        let nodeOutput = self.nodes.value(for: link.from)!.output * link.weight
-                        sum += weight * nodeOutput
-                        */
-                        
-                        //print("Sum: \(sum)")
-                    }//end
-                    
-                    let type = node.activation
-                    switch type {
-                    case NActivation.sigmoid:
-                        node.output = Sigmoid(x: sum, response: node.activationResponse)
-                        nodes.insert(node, for: nodeIds[id])
-                    case NActivation.add:
-                        node.output = Add(x: sum, response: node.activationResponse)
-                        nodes.insert(node, for: nodeIds[id])
-                    case NActivation.tanh:
-                        node.output = Tanh(x: sum, response: node.activationResponse)
-                        nodes.insert(node, for: nodeIds[id])
-                    case NActivation.relu:
-                        node.output = Relu(x: sum, response: node.activationResponse)
-                        nodes.insert(node, for: nodeIds[id])
-                    case NActivation.sine:
-                        node.output = Sine(x: sum, response: node.activationResponse)
-                        nodes.insert(node, for: nodeIds[id])
-                    case NActivation.abs:
-                        node.output = Abs(x: sum, response: node.activationResponse)
-                        nodes.insert(node, for: nodeIds[id])
-                    case NActivation.square:
-                        node.output = Square(x: sum, response: node.activationResponse)
-                        nodes.insert(node, for: nodeIds[id])
-                    }
-                    
-                    //print("Node output: \(node.output)")
-                    
-                    if node.type == NType.output {
-                        outputs += [node.output]
-                    }
-                }
-            }
-            //print("\nend\n")
-        }
-            
-        /*
-        if active {
-            for key in self.nodes.inorderArrayFromKeys {
-                var node = self.nodes.value(for: key)!
-                node.output = 0
-                self.nodes.remove(key)
-                self.nodes.insert(node, for: node.id)
-                //self.nodes[n].output = 0
-            }
-        }
-        */
-        
-        /*
-         if active {
-         for n in 0..<self.nodes.count {
-         self.nodes[n].output = 0
-         }
-         }
-         */
-        
-        
-        
-        return outputs
-    }
- 
-     */
-    
-    mutating func run(inputsIn: [Double], networkType: NetworkType) -> [Double] {
+    public mutating func run(inputsIn: [Double], networkType: NetworkType) -> [Double] {
         var outputs = [Double]()
         
         var flushcount = 0
@@ -254,12 +135,12 @@ public struct NNetwork {
                 nodes.insert(theNode, for: theNode.id)
             }
         }
-
+        
         
         return outputs
     }
     
-    private func getDepth() -> Int {
+    public  func getDepth() -> Int {
         
         var depth = 1
         

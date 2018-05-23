@@ -64,7 +64,7 @@ public class NGenome {
     func nodeCount() -> Int { return self.nodes.count }
     
     func getNodes() -> [NNode] { return self.nodes }
-
+    
     func getLinks() -> BTree<Int, NLink> { return self.links }
     
     // MARK: Mutation
@@ -145,7 +145,7 @@ public class NGenome {
             if self.nodes[randNodeId].activationResponse <= 0.1 {
                 self.nodes[randNodeId].activationResponse = abs(tempPerturbAmount)
             }
-
+            
         }
     }
     
@@ -182,20 +182,20 @@ public class NGenome {
         }
         
         /*
-        for key in linkKeys {
-            let link = links.value(for: key)!
-            var newLink = NLink(innovation: link.innovation, to: link.to, from: link.from, weight: link.weight, enabled: link.enabled, recurrent: link.recurrent)
-            if normalRandom() <= 0.8 {
-                newLink.enable()
-                links.remove(key)
-                newLinks.insert(newLink, for: newLink.innovation)
-            } else {
-                newLink.disable()
-                links.remove(key)
-                newLinks.insert(newLink, for: newLink.innovation)
-            }
-        }
- */
+         for key in linkKeys {
+         let link = links.value(for: key)!
+         var newLink = NLink(innovation: link.innovation, to: link.to, from: link.from, weight: link.weight, enabled: link.enabled, recurrent: link.recurrent)
+         if normalRandom() <= 0.8 {
+         newLink.enable()
+         links.remove(key)
+         newLinks.insert(newLink, for: newLink.innovation)
+         } else {
+         newLink.disable()
+         links.remove(key)
+         newLinks.insert(newLink, for: newLink.innovation)
+         }
+         }
+         */
         //self.links = newLinks
     }
     
@@ -281,7 +281,7 @@ public class NGenome {
     }
     
     private func addLink(database: NDatabase) {
-                /* If there are no hidden nodes, then do not make a connection */
+        /* If there are no hidden nodes, then do not make a connection */
         // Check if there are hidden nodes, and if there are skip
         // Additionally, gather hidden nodes and output nodes identifiers.
         var hiddenNodesExist = false

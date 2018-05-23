@@ -137,15 +137,16 @@ public class Neat {
             
             // wipe species genomes
             self.species.value(for: key)!.removePopulation()
+            
             /*
-            if self.species.value(for: key)!.noImprovement > 10 {
-                self.species.remove(key)
-            }
-            */
+             if self.species.value(for: key)!.noImprovement > 10 {
+             self.species.remove(key)
+             }
+             */
         }
     }
     
-    private func nextGenomeId() {
+    public func nextGenomeId() {
         //self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
         if currentGenomeKeyId == populationSize - 1 {
             currentGenomeKeys = self.genomes.inorderArrayFromKeys
