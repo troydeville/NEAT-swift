@@ -1,7 +1,12 @@
 import Foundation
 
-func normalRandom() -> Double {
+public func normalRandom() -> Double {
+    #if os(Linux)
+    return (Double(random()) / Double(UINT32_MAX))
+    #else
     return (Double(arc4random()) / Double(UINT32_MAX))
+    #endif
+    
 }
 
 // Random value from -1 to 1.
@@ -24,66 +29,18 @@ public func NRandomActivationType() -> NActivation {
     switch randomInt(min: 1, max: 7) {
     case 1:
         return NActivation.add
-        //return NActivation.sigmoid
     case 2:
         return NActivation.sigmoid
     case 3:
         return NActivation.tanh
-        //return NActivation.sigmoid
     case 4:
         return NActivation.relu
-        //return NActivation.sigmoid
     case 5:
         return NActivation.sine
-        //return NActivation.sigmoid
     case 6:
         return NActivation.abs
     case 7:
         return NActivation.square
-        //return NActivation.sigmoid
     default: return NActivation.sigmoid
     }
 }
-
-/*
- public func NRandomActivationType() -> NActivation {
-    switch randomInt(min: 1, max: 7) {
-    case 1:
-        return NActivation.relu
-    case 2:
-        return NActivation.relu
-    case 3:
-        return NActivation.relu
-    case 4:
-        return NActivation.relu
-    case 5:
-        return NActivation.relu
-    case 6:
-        return NActivation.relu
-    case 7:
-        return NActivation.relu
-    default: return NActivation.relu
-    }
- }
-*/
-/*
-public func NRandomActivationType() -> NActivation {
-    switch randomInt(min: 1, max: 7) {
-    case 1:
-        return NActivation.sigmoid
-    case 2:
-        return NActivation.sigmoid
-    case 3:
-        return NActivation.sigmoid
-    case 4:
-        return NActivation.sigmoid
-    case 5:
-        return NActivation.sigmoid
-    case 6:
-        return NActivation.sigmoid
-    case 7:
-        return NActivation.sigmoid
-    default: return NActivation.sigmoid
-    }
-}
-*/
