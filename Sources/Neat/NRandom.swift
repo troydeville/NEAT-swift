@@ -22,7 +22,12 @@ public func randomInt(min: Int, max: Int) -> Int {
     if max < 0 {
         return 0
     }
+    #if os(Linux)
+    return min + Int(random() % (max + 1 - min))
+    #else
     return min + Int(arc4random_uniform(UInt32(max - min)))
+    #endif
+    
 }
 
 public func NRandomActivationType() -> NActivation {
