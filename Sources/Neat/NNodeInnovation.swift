@@ -15,7 +15,6 @@ public struct NNodeInnovation {
     
 }
 
-
 extension NNodeInnovation: Comparable {
     public static func < (lhs: NNodeInnovation, rhs: NNodeInnovation) -> Bool {
         return lhs.nodeId < rhs.nodeId

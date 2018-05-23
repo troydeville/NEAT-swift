@@ -9,7 +9,6 @@ public func normalRandom() -> Double {
     
 }
 
-// Random value from -1 to 1.
 public func NRandom() -> Double {
     if normalRandom() < 0.5 {
         return normalRandom() * 2
