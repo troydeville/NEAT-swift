@@ -24,7 +24,7 @@ public class Neat {
     
     //var king: NGenome
     
-    init(inputs: Int, outputs: Int, population: Int, confURL: String) {
+    public init(inputs: Int, outputs: Int, population: Int, confURL: String) {
         
         self.database = NDatabase(population: population, inputs: inputs, outputs: outputs)
         
