@@ -1,0 +1,13 @@
+{
+    "nodeMutation": 0.03,
+    "connectionMutation": 0.3,
+    "weightMutation": 0.80,
+    "activationMutation": 0.1,
+    "enableMutation": 0.3,
+    "weightPerturbation": 0.3,
+    "activationPerturbation": 1,
+    "threshHold": 4,
+    "c1": 1.0,
+    "c2": 1.0,
+    "c3": 0.4
+}
