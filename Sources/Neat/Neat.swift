@@ -1,6 +1,7 @@
 import Foundation
 
 public let BTREEORDER = 4
+public var BIASID = 0
 
 public class Neat {
     
@@ -75,6 +76,7 @@ public class Neat {
     }
     
     public func assignToSpecies() {
+        //let speciesKeys = self.species.inorderArrayFromKeys
         
         var foundSpecies = false
         
@@ -90,10 +92,26 @@ public class Neat {
                 }
             }
         }
-        
+        /*
+         for key in speciesKeys {// Find genome is compatible with the leader
+         let s = self.species.value(for: key)!
+         let currentGenome = self.genomes.value(for: currentGenomeId)!
+         let isCompatable = s.isCompatable(g1: currentGenome, g2: s.getLeader(), threshConfig: threshConf, database: database)
+         if isCompatable {
+         foundSpecies = true
+         //print(currentGenome.description)
+         s.insertGenome(genome: currentGenome)
+         break
+         }
+         }
+         */
         if !foundSpecies {
             let speciesId = database.nextSpeciesId()
             let s = NSpecies(id: speciesId, leader: self.genomes.value(for: currentGenomeId)!, database: database)
+            
+            //print("\n\n\n\n\nn\nHERE\n")
+            //print(self.genomes.value(for: currentGenomeId)!)
+            //print("\n")
             
             species.insert(s, for: s.id)
         }
@@ -101,10 +119,16 @@ public class Neat {
     }
     
     public func epoch() {
+        var tot = 0.0
         
         self.species.traverseKeysInOrder { key in
-            self.species.value(for: key)!.adjustFitnesses()
-            self.species.value(for: key)!.setSpawnAmounts()
+            tot += self.species.value(for: key)!.adjustFitnesses()
+        }
+        
+        tot /= Double(self.populationSize)
+        
+        self.species.traverseKeysInOrder { key in
+            self.species.value(for: key)!.setSpawnAmounts(globalAdjustedFitness: tot)
             self.species.value(for: key)!.incrimentAge()
             
             // get each species to eliminate it's lowest performing members
@@ -112,10 +136,11 @@ public class Neat {
             
             // remove the lowest performing genomes in this network that was removed in the species class
             let genomeToRemoveKeys = self.species.value(for: key)!.keysRemoved
-            
+            //print("Amount to remove: \(genomeToRemoveKeys.count)")
             for gKey in genomeToRemoveKeys {
                 self.genomes.remove(gKey)
             }
+            //self.currentGenomeKeys = self.genomes.inorderArrayFromKeys
             
             
             // replace entire species population by the reamining offspring per species.
@@ -144,6 +169,54 @@ public class Neat {
              }
              */
         }
+        
+        
+        
+        /*
+         for key in sKeys {
+         self.species.value(for: key)!.adjustFitnesses()
+         self.species.value(for: key)!.setSpawnAmounts()
+         self.species.value(for: key)!.incrimentAge()
+         
+         // get each species to eliminate it's lowest performing members
+         self.species.value(for: key)!.removeLowestPerformingMembers()
+         
+         // remove the lowest performing genomes in this network that was removed in the species class
+         let genomeToRemoveKeys = self.species.value(for: key)!.keysRemoved
+         //print("Amount to remove: \(genomeToRemoveKeys.count)")
+         for gKey in genomeToRemoveKeys {
+         self.genomes.remove(gKey)
+         }
+         self.currentGenomeKeys = self.genomes.inorderArrayFromKeys
+         
+         
+         // replace entire species population by the reamining offspring per species.
+         self.species.value(for: key)!.replaceMissingGenomes(database: database)
+         
+         // update this network with the newly created ones from the replacement
+         let theChildren = self.species.value(for: key)!.getReferenceOfTheNewChildren()
+         //print("Amount to restore: \(theChildren.count)")
+         for child in theChildren {
+         self.genomes.insert(child, for: child.id)
+         }
+         
+         // reset the keys
+         self.currentGenomeKeys = self.genomes.inorderArrayFromKeys
+         self.currentGenomeId = self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
+         
+         // set the king
+         self.king = self.findKing()
+         
+         // wipe species genomes
+         self.species.value(for: key)!.removePopulation()
+         
+         /*
+         if self.species.value(for: key)!.noImprovement > 10 {
+         self.species.remove(key)
+         }
+         */
+         }
+         */
     }
     
     public func nextGenomeId() {
@@ -184,12 +257,18 @@ extension Neat: CustomStringConvertible {
     public var description: String {
         //let keyDescription = "Genomes: \(self.currentGenomeKeys)\nInnovations: \(self.database.description)"
         var speciesDescription = ""
+        //let sKeys = self.species.inorderArrayFromKeys
         
         self.species.traverseKeysInOrder { key in
             let s = self.species.value(for: key)!
             speciesDescription += "species -- id: \(s.id), age: \(s.age), spawn: \(s.amountToSpawn), best: \(s.bestFitness)\n"
         }
-
+        /*
+         for key in sKeys {
+         let s = self.species.value(for: key)!
+         speciesDescription += "species -- id: \(s.id), age: \(s.age), spawn: \(s.amountToSpawn), best: \(s.bestFitness)\n"
+         }
+         */
         return "\n" + speciesDescription + "\n"
     }
 }

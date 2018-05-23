@@ -40,6 +40,12 @@ public class NSpecies {
     
     func removePopulation() {
         //reset from previous generation
+        /*
+         let genomeKeys = self.genomes.inorderArrayFromKeys
+         for key in genomeKeys {
+         self.genomes.remove(key)
+         }
+         */
         self.genomes = BTree(order: BTREEORDER)!
         
         self.genomePool = [NGenome]()
@@ -50,8 +56,9 @@ public class NSpecies {
         
     }
     
-    func adjustFitnesses() {
+    func adjustFitnesses() -> Double {
         
+        //let genomeKeys = self.genomes.inorderArrayFromKeys
         let genomeAmount = Double(self.genomes.numberOfKeys)
         
         var tot = 0.0
@@ -72,7 +79,7 @@ public class NSpecies {
                 self.bestFitness = genome.fitness
             }
         }
-
+        
         let newAverageFitness = totFit/genomeAmount
         //let newAverageFitness = totFit/Double(self.database.population)
         
@@ -84,18 +91,27 @@ public class NSpecies {
         self.averageFitness = newAverageFitness
         self.averageAdjustedFitness = tot/genomeAmount
         
+        return newAverageFitness
     }
     
-    func setSpawnAmounts() {
+    func setSpawnAmounts(globalAdjustedFitness: Double) {
+        //let genomeKeys = self.genomes.inorderArrayFromKeys
         var tot = 0.0
         var varianceSum = 0.0
         
         self.genomes.traverseKeysInOrder { key in
             let genome = genomes.value(for: key)!
-            tot += genome.adjustedFitness / averageAdjustedFitness
+            tot += genome.adjustedFitness / globalAdjustedFitness
             varianceSum += (genome.fitness-self.averageFitness)*(genome.fitness-self.averageFitness)
         }
-        self.amountToSpawn = tot
+        /*
+         for key in genomeKeys {
+         let genome = genomes.value(for: key)!
+         tot += genome.adjustedFitness / averageAdjustedFitness
+         varianceSum += (genome.fitness-self.averageFitness)*(genome.fitness-self.averageFitness)
+         }
+         */
+        self.amountToSpawn = round(tot)
         
         //print("Amount to spawn: \(amountToSpawn)")
         
@@ -107,7 +123,7 @@ public class NSpecies {
         // remove all genomes whose fitness is less than the average fitness minus the variance
         let fitnessThreshold = self.averageFitness + self.variance
         let genomeKeys = self.genomes.inorderArrayFromKeys
-        var counter = Double(genomeKeys.count) * 0.70
+        var counter = Double(genomeKeys.count) * 0.80
         
         if genomeKeys.count >= 1 {
             for key in genomeKeys {
@@ -122,13 +138,20 @@ public class NSpecies {
             }
         }
         
+        //print("Average fitness: \(self.averageFitness)\nFitness Variance: \(self.variance)")
     }
     
     func replaceMissingGenomes(database: NDatabase) {
         
         let removedGenomeAmount = self.keysRemoved.count
         
+        //print("\nSpecies Actual Amount removed: \(removedGenomeAmount)\n")
+        
         var remainingMemberKeys = self.genomes.inorderArrayFromKeys
+        
+        //print("Remaining member: \(remainingMemberKeys.count)")
+        
+        
         
         /* Every child created has the chance to be mutated. */
         if removedGenomeAmount > 0 && remainingMemberKeys.count > 1 {
@@ -144,10 +167,12 @@ public class NSpecies {
                 let genomeA = self.genomes.value(for: remainingMemberKeys[randomKeyA])!
                 let genomeB = self.genomes.value(for: remainingMemberKeys[randomKeyB])!
                 let child = crossOver(g1: genomeA, g2: genomeB, database: database)
-                if normalRandom() <= 0.75 {
-                    child.mutate(database: database)
-                }
-                //child.mutate(database: database)
+                /*
+                 if normalRandom() <= 0.25 {
+                 child.mutate(database: database)
+                 }
+                 */
+                child.mutate(database: database)
                 self.genomes.insert(child, for: child.id)
                 self.referenceToReturnAfterRestoringTheDead += [child]
                 
@@ -164,6 +189,13 @@ public class NSpecies {
                     let newChildlink = NLink(innovation: kingLink.innovation, to: kingLink.to, from: kingLink.from)
                     newLinks.insert(newChildlink, for: newChildlink.innovation)
                 }
+                /*
+                 for key in linkKeys {
+                 let kingLink = kingLinks.value(for: key)!
+                 let newChildlink = NLink(innovation: kingLink.innovation, to: kingLink.to, from: kingLink.from)
+                 newLinks.insert(newChildlink, for: newChildlink.innovation)
+                 }
+                 */
                 let newChildGenome = NGenome(id: database.nextGenomeId(), nodes: self.getLeader().getNodes(), links: newLinks, fitness: 0.0)
                 newChildGenome.mutate(database: database)
                 self.genomes.insert(newChildGenome, for: newChildGenome.id)
@@ -172,7 +204,7 @@ public class NSpecies {
             
         }
         
-        let otherGenomesToMutateCount = round(Double(remainingMemberKeys.count) * 1)
+        let otherGenomesToMutateCount = round(Double(remainingMemberKeys.count) * 0.25)
         
         if otherGenomesToMutateCount > 1 {
             for _ in 1...Int(otherGenomesToMutateCount) {
@@ -192,6 +224,7 @@ public class NSpecies {
     }
     
     private func crossOver(g1: NGenome, g2: NGenome, database: NDatabase) -> NGenome {
+        
         /**
          At this point, it is unclear if I should make the child weights the same as the parents it got it from.
          In this current implementation, a new link is created and has the default of creating a random weight.
@@ -201,6 +234,9 @@ public class NSpecies {
         
         var childNodes = [NNode]()
         
+        //print("\n\n\n\n\n\nTHIS IS THE CHILD NODES: ")
+        //print(g1.nodes)
+        //print(g2.nodes)
         let childLinks: BTree<Int, NLink> = BTree(order: BTREEORDER)!
         
         let g1Innovations = g1.getInnovations(database: database)

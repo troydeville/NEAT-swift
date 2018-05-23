@@ -15,7 +15,7 @@ public struct NLink {
         self.innovation = innovation
         self.to = to
         self.from = from
-        if from == 3 {
+        if from == BIASID {
             self.weight = 1
         } else {
             self.weight = NRandom()
@@ -30,7 +30,11 @@ public struct NLink {
         self.innovation = innovation
         self.to = to
         self.from = from
-        self.weight = weight
+        if from == BIASID {
+            self.weight = 1
+        } else {
+            self.weight = weight
+        }
         self.enabled = enabled
         self.recurrent = recurrent
     }

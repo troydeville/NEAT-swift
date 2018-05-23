@@ -13,14 +13,14 @@ public class NDatabase {
     // Variables for configuration file
     var perturbMutation = 0.80
     var addNodeMutation = 0.03
-    var addLinkMutation = 0.3
+    var addLinkMutation: Double
     var enableMutation = 0.8
     var activationMutation = 0.1
-    var typeMutation = 0.0
+    var typeMutation = 0.01
     
     var perturbAmount = 0.333333333
     var activationPerturbAmount = 0.333333333
-    var timesToFindConnection = 15
+    var timesToFindConnection = 10
     
     var population = 0
     
@@ -32,6 +32,8 @@ public class NDatabase {
         self.nodeID = inputs + outputs + 1
         self.biasId = inputs + 1
         self.population = population
+        let x = Double(population)
+        self.addLinkMutation = Sigmoid(x: x*x / (x + 1), response: 0.001) - 0.2
     }
     
     func newInnovation(node: NNode?, link: NLink?) -> Bool {
@@ -96,7 +98,21 @@ public class NDatabase {
         
         var linksFrom = [NLinkInnovation]()
         var linksTo = [NLinkInnovation]()
-
+        /*
+         for key in linkIds {
+         let linkInov = self.linkInnovations.value(for: key)!
+         if linkInov.nIn == nodeFrom {
+         linksFrom += [linkInov]
+         }
+         }
+         
+         for key in linkIds {
+         let linkInov = self.linkInnovations.value(for: key)!
+         if linkInov.nOut == nodeTo {
+         linksTo += [linkInov]
+         }
+         }
+         */
         self.linkInnovations.traverseKeysInOrder { key in
             
             let linkInov1 = self.linkInnovations.value(for: key)!
@@ -137,7 +153,14 @@ public class NDatabase {
                 }
             }
         }
-
+        /*
+         for key in linkKeys {
+         let link = self.linkInnovations.value(for: key)!
+         if (link.nIn == from) && (link.nOut == to) { // Innovation exists
+         return link.innovationID
+         }
+         }
+         */
         return linkIdentification
     }
     
@@ -156,11 +179,22 @@ extension NDatabase: CustomStringConvertible {
         self.nodeInnovations.traverseKeysInOrder { key in
             innovationIds += [self.nodeInnovations.value(for: key)!.innovationId]
         }
+        /*
+         for nKey in nodeKeys {
+         innovationIds += [self.nodeInnovations.value(for: nKey)!.innovationId]
+         }
+         */
+        
+        //let linkKeys = self.linkInnovations.inorderArrayFromKeys
         
         self.linkInnovations.traverseKeysInOrder { key in
             innovationIds += [self.linkInnovations.value(for: key)!.innovationID]
         }
-
+        /*
+         for lKey in linkKeys {
+         innovationIds += [self.linkInnovations.value(for: lKey)!.innovationID]
+         }
+         */
         return "\(innovationIds)"
     }
 }
