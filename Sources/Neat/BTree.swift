@@ -28,7 +28,7 @@
 
 // MARK: - BTreeNode class
 
-class BTreeNode<Key: Comparable, Value> {
+public class BTreeNode<Key: Comparable, Value> {
     /**
      * The tree that owns the node.
      */
@@ -396,7 +396,7 @@ extension BTreeNode: CustomStringConvertible {
     /**
      *  Returns a String containing the preorder representation of the nodes.
      */
-    var description: String {
+    public var description: String {
         var str = "\(keys)"
         
         if !isLeaf {
