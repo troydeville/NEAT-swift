@@ -124,8 +124,9 @@ public struct NNetwork {
             
             
         } ///1...flushcount
+        
         if networkType == NetworkType.SnapShot {
-            self.nodes.traverseKeysInOrder { key in
+            for key in nodeIds {
                 var theNode = nodes.value(for: key)!
                 theNode.output = 0
                 nodes.remove(theNode.id)
