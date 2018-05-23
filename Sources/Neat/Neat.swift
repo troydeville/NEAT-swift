@@ -50,7 +50,7 @@ public class Neat {
         
     }
     
-    func encodeConfigurationFile(_ confURL: String) -> [String : Double] {
+    public func encodeConfigurationFile(_ confURL: String) -> [String : Double] {
         var conf: [String : Double] = [String : Double]()
         let url = URL(fileURLWithPath: confURL)
         do {
@@ -60,17 +60,17 @@ public class Neat {
         return conf
     }
     
-    func run(inputs: [Double], inputCount: Int, outputCount: Int) -> [Double] {
+    public func run(inputs: [Double], inputCount: Int, outputCount: Int) -> [Double] {
         //print(self.genomes.value(for: currentGenomeId)!.description)
         var network = NNetwork(genome: self.genomes.value(for: currentGenomeId)!)
         return network.run(inputsIn: inputs, networkType: NetworkType.SnapShot)
     }
     
-    func assignFitness(fitness: Double) {
+    public func assignFitness(fitness: Double) {
         self.genomes.value(for: self.currentGenomeId)!.fitness = fitness
     }
     
-    func assignToSpecies() {
+    public func assignToSpecies() {
         let speciesKeys = self.species.inorderArrayFromKeys
         
         var foundSpecies = false
@@ -99,7 +99,7 @@ public class Neat {
         nextGenomeId()
     }
     
-    func epoch() {
+    public func epoch() {
         let sKeys = self.species.inorderArrayFromKeys
         for key in sKeys {
             self.species.value(for: key)!.adjustFitnesses()
@@ -157,7 +157,7 @@ public class Neat {
         }
     }
     
-    func findKing() -> NGenome {
+    public func findKing() -> NGenome {
         var theKing: NGenome = NGenome()
         var hFit = 0.0
         for key in self.currentGenomeKeys {
