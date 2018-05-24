@@ -2,8 +2,7 @@ import Foundation
 
 public func normalRandom() -> Double {
     #if os(Linux)
-    return drand48()
-    //(Double(random()) / Double(UINT32_MAX))
+    return 2 * Double(random()) / Double(UINT32_MAX)
     #else
     return (Double(arc4random()) / Double(UINT32_MAX))
     #endif
