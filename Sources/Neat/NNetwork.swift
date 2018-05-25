@@ -12,9 +12,14 @@ public struct NNetwork {
         self.links = genome.getLinks()
         self.nodeIds.removeAll()
         
-        let allNodes = genome.getNodes()
+        /*
+        for node in genome.getNodes() {
+            self.nodes.insert(node, for: node.id)
+        }
+        */
+        let testNodes = genome.getNodes()
         
-        let _ = allNodes.map { node in
+        let _ = testNodes.map { node in
             self.nodes.insert(node, for: node.id)
         }
         
@@ -29,6 +34,21 @@ public struct NNetwork {
             toNode.appendIncommingLink(link: link)
             self.nodes.insert(toNode, for: link.to)
         }
+ /*
+        for l in self.links.inorderArrayFromKeys {
+            let link = self.links.value(for: l)!
+            
+            //print("\(link.from):\(link.to)")
+            
+            var fromNode = self.nodes.value(for: link.from)!
+            fromNode.appendOutgoingLink(link: link)
+            self.nodes.insert(fromNode, for: link.from)
+            
+            var toNode = self.nodes.value(for: link.to)!
+            toNode.appendIncommingLink(link: link)
+            self.nodes.insert(toNode, for: link.to)
+        }
+ */
         
         nodeIds = self.nodes.inorderArrayFromKeys
     }
@@ -79,7 +99,20 @@ public struct NNetwork {
                     
                     sum += weight * output
                 }
-
+                
+                /*
+                let linkKeys = self.links.inorderArrayFromKeys
+                for lnk in linkKeys {
+                    let link = self.links.value(for: lnk)!
+                    let weight = link.weight
+                    
+                    // get node output from link_from_nodeID
+                    let node = self.nodes.value(for: link.from)!
+                    let output = node.output
+                    
+                    sum += weight * output
+                }
+                 */
                 var node = self.nodes.value(for: nodeIds[cNeuron])!
                 
                 let type = node.activation
@@ -124,6 +157,17 @@ public struct NNetwork {
             
             
         } ///1...flushcount
+        /*
+        if networkType == NetworkType.SnapShot {
+            self.nodes.traverseKeysInOrder { key in
+                var theNode = nodes.value(for: key)!
+                theNode.output = 0
+                nodes.remove(theNode.id)
+                nodes.insert(theNode, for: theNode.id)
+            }
+        }
+        */
+        
         
         if networkType == NetworkType.SnapShot {
             for key in nodeIds {
@@ -133,6 +177,7 @@ public struct NNetwork {
                 nodes.insert(theNode, for: theNode.id)
             }
         }
+        
         
         return outputs
     }

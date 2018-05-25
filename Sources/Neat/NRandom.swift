@@ -11,9 +11,9 @@ public func normalRandom() -> Double {
 
 public func NRandom() -> Double {
     if normalRandom() < 0.5 {
-        return normalRandom() * 2
+        return normalRandom() * 5
     } else {
-        return normalRandom() * -1.0 * 2
+        return normalRandom() * -1.0 * 5
     }
 }
 

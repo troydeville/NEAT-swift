@@ -5,270 +5,101 @@ public var BIASID = 0
 
 public class Neat {
     
-    //var benchMarkTest: Double = 0.0001
-    
-    // all of the genomes in the network
-    private let genomes: BTree<Int, NGenome> = BTree(order: BTREEORDER)!
-    private let species: BTree<Int, NSpecies> = BTree(order: BTREEORDER)!
-    
-    // Network's King Genome and Fitness Score
-    public var king = NGenome()
-    public var topFitnessScore = 0.0
-    
-    private var currentGenomeKeys = [Int]()
-    private var currentGenomeKeyId = 0
-    private var currentGenomeId: Int
-    
-    private let database: NDatabase
     public let populationSize: Int
     
-    // Compatability Threshold Config
-    var threshConf = [Double]()
+    private var networkS: NNeuralNetworkS?
+    private var networkM: NNeuralNetworkM?
+    private var multithread: Bool
     
-    //var king: NGenome
-    
-    public init(inputs: Int, outputs: Int, population: Int, confURL: String) {
-        
-        self.database = NDatabase(population: population, inputs: inputs, outputs: outputs)
-        
+    public init(inputs: Int, outputs: Int, population: Int, confURL: String, multithread: Bool) {
         self.populationSize = population
         
-        // initiate genomes of amount of population
-        for amount in 1...population {
-            let genome = NGenome(id: amount, inputs: inputs, outputs: outputs, database: self.database)
-            genomes.insert(genome, for: genome.id)
+        if !multithread {
+            networkS = NNeuralNetworkS(inputs: inputs, outputs: outputs, population: population, confURL: confURL)
+        } else {
+            networkM = NNeuralNetworkM(inputs: inputs, outputs: outputs, population: population, confURL: confURL)
         }
-        //self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
-        currentGenomeKeys = self.genomes.inorderArrayFromKeys
-        self.currentGenomeId = self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
-        self.king = findKing()
         
-        // Fetch data from config
-        let configFile = self.encodeConfigurationFile(confURL)
-        
-        threshConf += [configFile["threshHold"]!]
-        threshConf += [configFile["c1"]!]
-        threshConf += [configFile["c2"]!]
-        threshConf += [configFile["c3"]!]
-        
-    }
-    
-    public func encodeConfigurationFile(_ confURL: String) -> [String : Double] {
-        var conf: [String : Double] = [String : Double]()
-        let url = URL(fileURLWithPath: confURL)
-        do {
-            let data = try Data(contentsOf: url)
-            conf = try JSONDecoder().decode([String : Double].self, from: data)
-        } catch { }// END
-        return conf
+        self.multithread = multithread
     }
     
     public func run(inputs: [Double], inputCount: Int, outputCount: Int) -> [Double] {
-        //print(self.genomes.value(for: currentGenomeId)!.description)
-        var network = NNetwork(genome: self.genomes.value(for: currentGenomeId)!)
-        return network.run(inputsIn: inputs, networkType: NetworkType.SnapShot)
-        //benchMarkTest += 0.000001
-        //return [benchMarkTest]
+        if !multithread {
+            return networkS!.run(inputs: inputs, inputCount: inputCount, outputCount: outputCount)
+        }
+        
+        return [Double]()
     }
     
-    public func assignFitness(fitness: Double) {
-        self.genomes.value(for: self.currentGenomeId)!.fitness = fitness
+    public func run(inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int) {
+        if multithread {
+            let testType = NTestType.distanceSquared
+            networkM!.run(inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType)
+        }
     }
     
-    public func assignToSpecies() {
-        //let speciesKeys = self.species.inorderArrayFromKeys
-        
-        var foundSpecies = false
-        
-        self.species.traverseKeysInOrder { key in
-            if !foundSpecies {
-                let s = self.species.value(for: key)!
-                let currentGenome = self.genomes.value(for: currentGenomeId)!
-                let isCompatable = s.isCompatable(g1: currentGenome, g2: s.getLeader(), threshConfig: threshConf, database: database)
-                if isCompatable {
-                    foundSpecies = true
-                    //print(currentGenome.description)
-                    s.insertGenome(genome: currentGenome)
-                }
-            }
+    public func testNetwork(genome: NGenome, inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int) {
+        if multithread {
+            let testType = NTestType.distanceSquared
+            self.networkM?.testNetwork(genome: genome, inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType)
         }
-        /*
-         for key in speciesKeys {// Find genome is compatible with the leader
-         let s = self.species.value(for: key)!
-         let currentGenome = self.genomes.value(for: currentGenomeId)!
-         let isCompatable = s.isCompatable(g1: currentGenome, g2: s.getLeader(), threshConfig: threshConf, database: database)
-         if isCompatable {
-         foundSpecies = true
-         //print(currentGenome.description)
-         s.insertGenome(genome: currentGenome)
-         break
-         }
-         }
-         */
-        if !foundSpecies {
-            let speciesId = database.nextSpeciesId()
-            let s = NSpecies(id: speciesId, leader: self.genomes.value(for: currentGenomeId)!, database: database)
-            
-            //print("\n\n\n\n\nn\nHERE\n")
-            //print(self.genomes.value(for: currentGenomeId)!)
-            //print("\n")
-            
-            species.insert(s, for: s.id)
+    }
+    
+    public func nextGenome(_ previouslyTestedGenomeFitness: Double) {
+        // 1. Assign the fitness score to the genome.
+        // 2. Add genome to a species.
+        if !multithread {
+            networkS!.assignFitness(fitness: previouslyTestedGenomeFitness)
+            networkS!.assignToSpecies()
         }
-        nextGenomeId()
     }
     
     public func epoch() {
-        var tot = 0.0
-        
-        self.species.traverseKeysInOrder { key in
-            tot += self.species.value(for: key)!.adjustFitnesses()
-        }
-        
-        tot /= Double(self.populationSize)
-        
-        self.species.traverseKeysInOrder { key in
-            self.species.value(for: key)!.setSpawnAmounts(globalAdjustedFitness: tot)
-            self.species.value(for: key)!.incrimentAge()
-            
-            // get each species to eliminate it's lowest performing members
-            self.species.value(for: key)!.removeLowestPerformingMembers()
-            
-            // remove the lowest performing genomes in this network that was removed in the species class
-            let genomeToRemoveKeys = self.species.value(for: key)!.keysRemoved
-            //print("Amount to remove: \(genomeToRemoveKeys.count)")
-            for gKey in genomeToRemoveKeys {
-                self.genomes.remove(gKey)
-            }
-            //self.currentGenomeKeys = self.genomes.inorderArrayFromKeys
-            
-            
-            // replace entire species population by the reamining offspring per species.
-            self.species.value(for: key)!.replaceMissingGenomes(database: database)
-            
-            // update this network with the newly created ones from the replacement
-            let theChildren = self.species.value(for: key)!.getReferenceOfTheNewChildren()
-            //print("Amount to restore: \(theChildren.count)")
-            for child in theChildren {
-                self.genomes.insert(child, for: child.id)
-            }
-            
-            // reset the keys
-            self.currentGenomeKeys = self.genomes.inorderArrayFromKeys
-            self.currentGenomeId = self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
-            
-            // set the king
-            self.king = self.findKing()
-            
-            // wipe species genomes
-            self.species.value(for: key)!.removePopulation()
-            
-            /*
-             if self.species.value(for: key)!.noImprovement > 10 {
-             self.species.remove(key)
-             }
-             */
-        }
-        
-        
-        
-        /*
-         for key in sKeys {
-         self.species.value(for: key)!.adjustFitnesses()
-         self.species.value(for: key)!.setSpawnAmounts()
-         self.species.value(for: key)!.incrimentAge()
-         
-         // get each species to eliminate it's lowest performing members
-         self.species.value(for: key)!.removeLowestPerformingMembers()
-         
-         // remove the lowest performing genomes in this network that was removed in the species class
-         let genomeToRemoveKeys = self.species.value(for: key)!.keysRemoved
-         //print("Amount to remove: \(genomeToRemoveKeys.count)")
-         for gKey in genomeToRemoveKeys {
-         self.genomes.remove(gKey)
-         }
-         self.currentGenomeKeys = self.genomes.inorderArrayFromKeys
-         
-         
-         // replace entire species population by the reamining offspring per species.
-         self.species.value(for: key)!.replaceMissingGenomes(database: database)
-         
-         // update this network with the newly created ones from the replacement
-         let theChildren = self.species.value(for: key)!.getReferenceOfTheNewChildren()
-         //print("Amount to restore: \(theChildren.count)")
-         for child in theChildren {
-         self.genomes.insert(child, for: child.id)
-         }
-         
-         // reset the keys
-         self.currentGenomeKeys = self.genomes.inorderArrayFromKeys
-         self.currentGenomeId = self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
-         
-         // set the king
-         self.king = self.findKing()
-         
-         // wipe species genomes
-         self.species.value(for: key)!.removePopulation()
-         
-         /*
-         if self.species.value(for: key)!.noImprovement > 10 {
-         self.species.remove(key)
-         }
-         */
-         }
-         */
-    }
-    
-    public func nextGenomeId() {
-        //self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
-        if currentGenomeKeyId == populationSize - 1 {
-            //currentGenomeKeys = self.genomes.inorderArrayFromKeys
-            currentGenomeKeyId = 0
-            self.currentGenomeId = self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
+        if !multithread {
+            networkS!.epoch()
         } else {
-            currentGenomeKeyId += 1
-            self.currentGenomeId = self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
+            networkM!.epoch()
         }
     }
     
-    public func findKing() -> NGenome {
-        var theKing: NGenome = NGenome()
-        var hFit = 0.0
-        for key in self.currentGenomeKeys {
-            let compareGenome = self.genomes.value(for: key)!
-            if compareGenome.fitness > hFit {
-                theKing = compareGenome.copy()
-                hFit = compareGenome.fitness
-                theKing.fitness = hFit
-            }
+    public func getKing() -> NGenome {
+        if !multithread {
+            return networkS!.findKing()
+        } else {
+            return networkM!.findKing()
         }
-        
-        if theKing.id == 0 { return self.king } else { return theKing }
     }
     
 }
-
-// MARK: NeuralNetwork extension: Decription
 
 extension Neat: CustomStringConvertible {
     /**
      *  Returns details of the network
      */
     public var description: String {
-        //let keyDescription = "Genomes: \(self.currentGenomeKeys)\nInnovations: \(self.database.description)"
-        var speciesDescription = ""
-        //let sKeys = self.species.inorderArrayFromKeys
-        
-        self.species.traverseKeysInOrder { key in
-            let s = self.species.value(for: key)!
-            speciesDescription += "species -- id: \(s.id), age: \(s.age), spawn: \(s.amountToSpawn), best: \(s.bestFitness)\n"
+        if !multithread {
+            //let keyDescription = "Genomes: \(self.currentGenomeKeys)\nInnovations: \(self.database.description)"
+            var speciesDescription = ""
+            //let sKeys = self.species.inorderArrayFromKeys
+
+            
+            networkS!.species.traverseKeysInOrder { key in
+                let s = networkS!.species.value(for: key)!
+                speciesDescription += "species -- id: \(s.id), age: \(s.age), spawn: \(s.amountToSpawn), best: \(s.bestFitness)\n"
+            }
+            return "\n" + speciesDescription + "\n"
+        } else {
+            //let keyDescription = "Genomes: \(self.currentGenomeKeys)\nInnovations: \(self.database.description)"
+            var speciesDescription = ""
+            //let sKeys = self.species.inorderArrayFromKeys
+            
+            networkM!.species.traverseKeysInOrder { key in
+                let s = networkM!.species.value(for: key)!
+                speciesDescription += "species -- id: \(s.id), age: \(s.age), spawn: \(s.amountToSpawn), best: \(s.bestFitness)\n"
+            }
+            return "\n" + speciesDescription + "\n"
         }
-        /*
-         for key in sKeys {
-         let s = self.species.value(for: key)!
-         speciesDescription += "species -- id: \(s.id), age: \(s.age), spawn: \(s.amountToSpawn), best: \(s.bestFitness)\n"
-         }
-         */
-        return "\n" + speciesDescription + "\n"
+        
+        
     }
 }

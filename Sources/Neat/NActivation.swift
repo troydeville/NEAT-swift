@@ -12,38 +12,38 @@ public enum NActivation {
 
 
 public func Add(x: Double, response: Double) -> Double {
-    return x + response
+    return x
 }
 
 public func Sigmoid(x: Double, response: Double) -> Double {
-    return 1 / (1 + exp((-5 * response) * x))
+    return 1 / (1 + exp((-6 - response) * x))
 }
 
 public func Tanh(x: Double, response: Double) -> Double {
-    return tanh(x * response)
+    return tanh(x)
 }
 
 public func Relu(x: Double, response: Double) -> Double {
     if x <= 0.0 {
         return 0.0
     }
-    return x * response
+    return x
 }
 
 public func Sine(x: Double, response: Double) -> Double {
-    return abs(sin(x * response))
+    return sin(x)
 }
 
 public func Abs(x: Double, response: Double) -> Double {
-    return abs(x * response)
+    return abs(x)
 }
 
 public func Square(x: Double, response: Double) -> Double {
-    return x * x * response
+    return x * x
 }
 
 public func SigmoidS(x: Double, response: Double) -> Double {
     //return (sinh(x + response) / cosh(x + response))
-    return 1 / (1 + exp(5 * response * x))
+    return 1 / (1 + exp(5 * x))
     //return sin(response * x)
 }

@@ -1,13 +1,16 @@
 {
     "nodeMutation": 0.03,
-    "connectionMutation": 0.3,
+    "connectionMutation": 0.5,
     "weightMutation": 0.80,
-    "activationMutation": 0.1,
+    "activationMutation": 0.0,
     "enableMutation": 0.3,
-    "weightPerturbation": 0.3,
-    "activationPerturbation": 1,
-    "threshHold": 4,
+    "typeMutation" : 0.0,
+    "weightPerturbation": 0.5,
+    "activationPerturbation": 1.0,
+    "triesToFindLink": 30,
+    "threshHold": 7.5,
     "c1": 1.0,
     "c2": 1.0,
-    "c3": 0.4
+    "c3": 0.00001,
+    "threads": 8
 }

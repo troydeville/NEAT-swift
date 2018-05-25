@@ -69,7 +69,19 @@ public class NSpecies {
             
             totFit += genome.fitness
             
-            genome.adjustedFitness = genome.fitness / genomeAmount
+            var fitnessToAdjust = genome.fitness
+            
+            if self.age < 5 {
+                fitnessToAdjust *= 1.5
+            } else if self.age > 50 {
+                fitnessToAdjust *= 0.7
+            } else if noImprovement > 5 {
+                
+            }
+            
+            
+            
+            genome.adjustedFitness = fitnessToAdjust / genomeAmount
             //genome.adjustedFitness = genome.fitness / Double(self.database.population)
             
             tot += genome.adjustedFitness
@@ -81,6 +93,7 @@ public class NSpecies {
         }
         
         let newAverageFitness = totFit/genomeAmount
+        let newAverageAdjustedFitness = tot/genomeAmount
         //let newAverageFitness = totFit/Double(self.database.population)
         
         if newAverageFitness <= self.averageFitness {
@@ -88,10 +101,11 @@ public class NSpecies {
         } else {
             noImprovement = 0
         }
-        self.averageFitness = newAverageFitness
-        self.averageAdjustedFitness = tot/genomeAmount
         
-        return newAverageFitness
+        self.averageFitness = newAverageFitness
+        self.averageAdjustedFitness = newAverageAdjustedFitness
+        
+        return newAverageAdjustedFitness
     }
     
     func setSpawnAmounts(globalAdjustedFitness: Double) {
@@ -99,11 +113,18 @@ public class NSpecies {
         var tot = 0.0
         var varianceSum = 0.0
         
+        //print("The global adjusted fitness: \(globalAdjustedFitness)")
+        
         self.genomes.traverseKeysInOrder { key in
             let genome = genomes.value(for: key)!
-            tot += genome.adjustedFitness / globalAdjustedFitness
+            tot += (genome.adjustedFitness / self.averageAdjustedFitness)
+            
             varianceSum += (genome.fitness-self.averageFitness)*(genome.fitness-self.averageFitness)
         }
+        
+        
+        //print("Total: \(tot)")
+        
         /*
          for key in genomeKeys {
          let genome = genomes.value(for: key)!
@@ -125,7 +146,7 @@ public class NSpecies {
         let genomeKeys = self.genomes.inorderArrayFromKeys
         var counter = Double(genomeKeys.count) * 0.80
         
-        if genomeKeys.count >= 1 {
+        if genomeKeys.count >= 9 {
             for key in genomeKeys {
                 if genomes.value(for: key)!.fitness < fitnessThreshold && genomes.value(for: key)!.fitness != self.bestFitness {
                     self.keysRemoved += [key]
@@ -172,7 +193,7 @@ public class NSpecies {
                  child.mutate(database: database)
                  }
                  */
-                child.mutate(database: database)
+                //child.mutate(database: database)
                 self.genomes.insert(child, for: child.id)
                 self.referenceToReturnAfterRestoringTheDead += [child]
                 
@@ -189,13 +210,6 @@ public class NSpecies {
                     let newChildlink = NLink(innovation: kingLink.innovation, to: kingLink.to, from: kingLink.from)
                     newLinks.insert(newChildlink, for: newChildlink.innovation)
                 }
-                /*
-                 for key in linkKeys {
-                 let kingLink = kingLinks.value(for: key)!
-                 let newChildlink = NLink(innovation: kingLink.innovation, to: kingLink.to, from: kingLink.from)
-                 newLinks.insert(newChildlink, for: newChildlink.innovation)
-                 }
-                 */
                 let newChildGenome = NGenome(id: database.nextGenomeId(), nodes: self.getLeader().getNodes(), links: newLinks, fitness: 0.0)
                 newChildGenome.mutate(database: database)
                 self.genomes.insert(newChildGenome, for: newChildGenome.id)
@@ -204,7 +218,7 @@ public class NSpecies {
             
         }
         
-        let otherGenomesToMutateCount = round(Double(remainingMemberKeys.count) * 0.25)
+        let otherGenomesToMutateCount = round(Double(remainingMemberKeys.count) * 0.99)
         
         if otherGenomesToMutateCount > 1 {
             for _ in 1...Int(otherGenomesToMutateCount) {

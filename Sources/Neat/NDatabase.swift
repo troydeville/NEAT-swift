@@ -11,29 +11,70 @@ public class NDatabase {
     var linkInnovations: BTree<Int, NLinkInnovation> = BTree(order: BTREEORDER)!
     
     // Variables for configuration file
+    /*
     var perturbMutation = 0.80
     var addNodeMutation = 0.03
     var addLinkMutation: Double
-    var enableMutation = 0.8
-    var activationMutation = 0.1
-    var typeMutation = 0.01
+    var enableMutation = 0.3
+    var activationMutation = 0.0
+    var typeMutation = 0.0
     
-    var perturbAmount = 0.333333333
-    var activationPerturbAmount = 0.333333333
-    var timesToFindConnection = 10
+    var perturbAmount = 0.5
+    var activationPerturbAmount = 1.0
+    var timesToFindConnection = 30
+    */
+    
+    var perturbMutation: Double
+    var addNodeMutation: Double
+    var addLinkMutation: Double
+    var enableMutation: Double
+    var activationMutation: Double
+    var typeMutation: Double
+    
+    var perturbAmount: Double
+    var activationPerturbAmount: Double
+    var timesToFindConnection: Double
     
     var population = 0
     
     
     var biasId: Int
     
-    init(population: Int, inputs: Int, outputs: Int) {
+    init(population: Int, inputs: Int, outputs: Int, config: [String:Double]) {
         self.genomeID = population
         self.nodeID = inputs + outputs + 1
         self.biasId = inputs + 1
         self.population = population
-        let x = Double(population)
-        self.addLinkMutation = Sigmoid(x: x*x / (x + 1), response: 0.001) - 0.2
+        //let x = Double(population)
+        //self.addLinkMutation = Sigmoid(x: x*x / (x + 1), response: 0.001) - 0.4
+        
+        /*
+         "nodeMutation": 0.01,
+         "connectionMutation": 0.5,
+         "weightMutation": 0.80,
+         "activationMutation": 0.1,
+         "enableMutation": 0.3,
+         "weightPerturbation": 0.3,
+         "activationPerturbation": 1,
+         "threshHold": 7.5,
+         "c1": 1.0,
+         "c2": 1.0,
+         "c3": 0.00001,
+         "threads": 8
+ */
+        
+        // Variables for configuration file
+        
+        self.addNodeMutation = config["nodeMutation"]!
+        self.addLinkMutation = config["connectionMutation"]!
+        self.perturbMutation = config["weightMutation"]!
+        self.activationMutation = config["activationMutation"]!
+        self.enableMutation = config["enableMutation"]!
+        self.typeMutation = config["typeMutation"]!
+        
+        self.perturbAmount = config["weightMutation"]!
+        self.activationPerturbAmount = config["activationPerturbation"]!
+        self.timesToFindConnection = config["triesToFindLink"]!
     }
     
     func newInnovation(node: NNode?, link: NLink?) -> Bool {
