@@ -28,7 +28,7 @@ public class NNeuralNetworkS {
     //var king: NGenome
     
     public init(inputs: Int, outputs: Int, population: Int, confURL: String) {
-
+        
         self.populationSize = population
         
         // Fetch data from config
@@ -116,7 +116,6 @@ public class NNeuralNetworkS {
     }
     
     public func epoch() {
-        /*
         var tot = 0.0
         
         self.species.traverseKeysInOrder { key in
@@ -124,16 +123,13 @@ public class NNeuralNetworkS {
         }
         
         tot /= Double(self.populationSize)
-        */
+        
         self.species.traverseKeysInOrder { key in
-            let species = self.species.value(for: key)!
-            //tot /= (Double(species.genomes.numberOfKeys) / Double(self.species.numberOfKeys))
-            let x = self.species.value(for: key)!.adjustFitnesses()
-            species.setSpawnAmounts(globalAdjustedFitness: x)
-            species.incrimentAge()
+            self.species.value(for: key)!.setSpawnAmounts(globalAdjustedFitness: tot)
+            self.species.value(for: key)!.incrimentAge()
             
             // get each species to eliminate it's lowest performing members
-            species.removeLowestPerformingMembers()
+            self.species.value(for: key)!.removeLowestPerformingMembers()
             
             // remove the lowest performing genomes in this network that was removed in the species class
             let genomeToRemoveKeys = self.species.value(for: key)!.keysRemoved
@@ -145,7 +141,7 @@ public class NNeuralNetworkS {
             
             
             // replace entire species population by the reamining offspring per species.
-            species.replaceMissingGenomes(database: database)
+            self.species.value(for: key)!.replaceMissingGenomes(database: database)
             
             // update this network with the newly created ones from the replacement
             let theChildren = self.species.value(for: key)!.getReferenceOfTheNewChildren()
@@ -162,7 +158,7 @@ public class NNeuralNetworkS {
             self.king = self.findKing()
             
             // wipe species genomes
-            species.removePopulation()
+            self.species.value(for: key)!.removePopulation()
             
             /*
              if self.species.value(for: key)!.noImprovement > 10 {

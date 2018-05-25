@@ -28,7 +28,7 @@ public class NNeuralNetworkM {
     var highestFitness = 0.0
     
     var queues = [DispatchQueue]()
-
+    
     var nObj = [NeatTaskObject]()
     
     
@@ -88,23 +88,23 @@ public class NNeuralNetworkM {
             genomes.insert(genome, for: genome.id)
             
             switch c {
-                case 1:
-                    genomeGroupA += [genome]
-                case 2:
-                    genomeGroupB += [genome]
-                case 3:
-                    genomeGroupC += [genome]
-                case 4:
-                    genomeGroupD += [genome]
-                case 5:
-                    genomeGroupE += [genome]
-                case 6:
-                    genomeGroupF += [genome]
-                case 7:
-                    genomeGroupG += [genome]
-                case 8:
-                    genomeGroupH += [genome]
-            
+            case 1:
+                genomeGroupA += [genome]
+            case 2:
+                genomeGroupB += [genome]
+            case 3:
+                genomeGroupC += [genome]
+            case 4:
+                genomeGroupD += [genome]
+            case 5:
+                genomeGroupE += [genome]
+            case 6:
+                genomeGroupF += [genome]
+            case 7:
+                genomeGroupG += [genome]
+            case 8:
+                genomeGroupH += [genome]
+                
             default: break
             }
             
@@ -136,7 +136,7 @@ public class NNeuralNetworkM {
             let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
             for o in 0..<output.count {
                 print("output: \(output[o])\n\n")
-                total += abs(expected[i][o] - output[0])
+                total += abs(expected[i][o] - output[o])
             }
         }
         
@@ -144,6 +144,8 @@ public class NNeuralNetworkM {
         
         if testType == NTestType.distanceSquared {
             fitness = pow(Double(expected.count * expected.first!.count) - total, 2)
+        } else if testType == NTestType.distance {
+            fitness = 1/total
         }
         
         print("fitness: \(fitness)")
@@ -165,7 +167,7 @@ public class NNeuralNetworkM {
                         var network = NNetwork(genome: self.genomeGroupA[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
                         for o in 0..<output.count {
-                            total += abs(expected[i][o] - output[0])
+                            total += abs(expected[i][o] - output[o])
                         }
                     }
                     
@@ -174,6 +176,8 @@ public class NNeuralNetworkM {
                     
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
+                    } else if testType == NTestType.distance {
+                        currentGenomeFitness = 1/total
                     }
                     
                     //print("total: \(total)")
@@ -193,7 +197,7 @@ public class NNeuralNetworkM {
                         var network = NNetwork(genome: self.genomeGroupB[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
                         for o in 0..<output.count {
-                            total += abs(expected[i][o] - output[0])
+                            total += abs(expected[i][o] - output[o])
                         }
                     }
                     
@@ -201,6 +205,8 @@ public class NNeuralNetworkM {
                     
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
+                    } else if testType == NTestType.distance {
+                        currentGenomeFitness = 1/total
                     }
                     
                     self.genomeGroupB[genomeIndex].fitness = currentGenomeFitness
@@ -218,7 +224,7 @@ public class NNeuralNetworkM {
                         var network = NNetwork(genome: self.genomeGroupC[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
                         for o in 0..<output.count {
-                            total += abs(expected[i][o] - output[0])
+                            total += abs(expected[i][o] - output[o])
                         }
                     }
                     
@@ -226,6 +232,8 @@ public class NNeuralNetworkM {
                     
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
+                    } else if testType == NTestType.distance {
+                        currentGenomeFitness = 1/total
                     }
                     
                     self.genomeGroupC[genomeIndex].fitness = currentGenomeFitness
@@ -243,7 +251,7 @@ public class NNeuralNetworkM {
                         var network = NNetwork(genome: self.genomeGroupD[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
                         for o in 0..<output.count {
-                            total += abs(expected[i][o] - output[0])
+                            total += abs(expected[i][o] - output[o])
                         }
                     }
                     
@@ -251,6 +259,8 @@ public class NNeuralNetworkM {
                     
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
+                    } else if testType == NTestType.distance {
+                        currentGenomeFitness = 1/total
                     }
                     
                     self.genomeGroupD[genomeIndex].fitness = currentGenomeFitness
@@ -267,7 +277,7 @@ public class NNeuralNetworkM {
                         var network = NNetwork(genome: self.genomeGroupE[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
                         for o in 0..<output.count {
-                            total += abs(expected[i][o] - output[0])
+                            total += abs(expected[i][o] - output[o])
                         }
                     }
                     
@@ -275,6 +285,8 @@ public class NNeuralNetworkM {
                     
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
+                    } else if testType == NTestType.distance {
+                        currentGenomeFitness = 1/total
                     }
                     
                     self.genomeGroupE[genomeIndex].fitness = currentGenomeFitness
@@ -292,7 +304,7 @@ public class NNeuralNetworkM {
                         var network = NNetwork(genome: self.genomeGroupF[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
                         for o in 0..<output.count {
-                            total += abs(expected[i][o] - output[0])
+                            total += abs(expected[i][o] - output[o])
                         }
                     }
                     
@@ -300,6 +312,8 @@ public class NNeuralNetworkM {
                     
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
+                    } else if testType == NTestType.distance {
+                        currentGenomeFitness = 1/total
                     }
                     
                     self.genomeGroupF[genomeIndex].fitness = currentGenomeFitness
@@ -318,7 +332,7 @@ public class NNeuralNetworkM {
                         var network = NNetwork(genome: self.genomeGroupG[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
                         for o in 0..<output.count {
-                            total += abs(expected[i][o] - output[0])
+                            total += abs(expected[i][o] - output[o])
                         }
                     }
                     
@@ -326,6 +340,8 @@ public class NNeuralNetworkM {
                     
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
+                    } else if testType == NTestType.distance {
+                        currentGenomeFitness = 1/total
                     }
                     
                     self.genomeGroupG[genomeIndex].fitness = currentGenomeFitness
@@ -343,7 +359,7 @@ public class NNeuralNetworkM {
                         var network = NNetwork(genome: self.genomeGroupH[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
                         for o in 0..<output.count {
-                            total += abs(expected[i][o] - output[0])
+                            total += abs(expected[i][o] - output[o])
                         }
                     }
                     
@@ -351,6 +367,8 @@ public class NNeuralNetworkM {
                     
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
+                    } else if testType == NTestType.distance {
+                        currentGenomeFitness = 1/total
                     }
                     
                     self.genomeGroupH[genomeIndex].fitness = currentGenomeFitness
@@ -367,11 +385,11 @@ public class NNeuralNetworkM {
         
         let group = DispatchGroup()
         /*
-        for i in 0..<queues.count {
-            queues[i].async(group: group) {
-                calculateNetwork(threadIndex: i + 1)
-            }
-        }
+         for i in 0..<queues.count {
+         queues[i].async(group: group) {
+         calculateNetwork(threadIndex: i + 1)
+         }
+         }
          */
         
         for i in 0..<queues.count {
@@ -380,23 +398,23 @@ public class NNeuralNetworkM {
                 calculateNetwork(threadIndex: i + 1)
             }
             /*
-            queues[i].async(group: group) {
-                self.nObj[i].task {
-                    calculateNetwork(threadIndex: i + 1)
-                }
-
-            }
- */
+             queues[i].async(group: group) {
+             self.nObj[i].task {
+             calculateNetwork(threadIndex: i + 1)
+             }
+             
+             }
+             */
         }
         
         /*
-        nObj[i].task(networkId: i + 1)
-        /*
+         nObj[i].task(networkId: i + 1)
+         /*
          DispatchQueue.global(qos: .userInitiated).async {
          //print("task \(i + 1) done.")
          }
          */
-        */
+         */
         
         while !threadAComplete || !threadBComplete || !threadCComplete || !threadDComplete || !threadEComplete || !threadFComplete || !threadGComplete || !threadHComplete {
         }
@@ -445,22 +463,24 @@ public class NNeuralNetworkM {
     public func epoch() {
         
         print(self.description)
-        /*
+        
         var tot = 0.0
         
         self.species.traverseKeysInOrder { key in
+            
             tot += self.species.value(for: key)!.adjustFitnesses()
         }
-        */
-        //tot /= Double(self.populationSize)
+        
+        tot /= Double(self.populationSize)
         
         self.species.traverseKeysInOrder { key in
             
             let species = self.species.value(for: key)!
-            //tot /= (Double(species.genomes.numberOfKeys) / Double(self.species.numberOfKeys))
-            let x = self.species.value(for: key)!.adjustFitnesses()
-            species.setSpawnAmounts(globalAdjustedFitness: x)
+            
+            species.setSpawnAmounts(globalAdjustedFitness: tot)
             species.incrimentAge()
+            
+            
             
             //print(self.description)
             
@@ -474,6 +494,7 @@ public class NNeuralNetworkM {
                 self.genomes.remove(gKey)
             }
             //self.currentGenomeKeys = self.genomes.inorderArrayFromKeys
+            
             
             
             // replace entire species population by the reamining offspring per species.
@@ -544,15 +565,15 @@ public class NNeuralNetworkM {
             n += 1
         }
         /*
-        print(genomeGroupA.count)
-        print(genomeGroupB.count)
-        print(genomeGroupC.count)
-        print(genomeGroupD.count)
-        print(genomeGroupE.count)
-        print(genomeGroupF.count)
-        print(genomeGroupG.count)
-        print(genomeGroupH.count)
-        */
+         print(genomeGroupA.count)
+         print(genomeGroupB.count)
+         print(genomeGroupC.count)
+         print(genomeGroupD.count)
+         print(genomeGroupE.count)
+         print(genomeGroupF.count)
+         print(genomeGroupG.count)
+         print(genomeGroupH.count)
+         */
         
         
     }

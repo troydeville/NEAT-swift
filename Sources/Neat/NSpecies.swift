@@ -68,21 +68,22 @@ public class NSpecies {
             let genome = genomes.value(for: key)!
             
             totFit += genome.fitness
+            /*
+             
+             var fitnessToAdjust = genome.fitness
+             
+             if self.age < 20 {
+             fitnessToAdjust *= 1.5
+             } else if self.age > 50 && noImprovement > 10 {
+             fitnessToAdjust *= 0.1
+             } else if noImprovement > 10 && self.age >= 20 && self.age <= 50 {
+             fitnessToAdjust *= 0.5
+             }
+             
+             */
             
-            var fitnessToAdjust = genome.fitness
-            
-            if self.age < 5 {
-                fitnessToAdjust *= 1.5
-            } else if self.age > 50 {
-                fitnessToAdjust *= 0.7
-            } else if noImprovement > 5 {
-                
-            }
-            
-            
-            
-            genome.adjustedFitness = fitnessToAdjust / genomeAmount
-            //genome.adjustedFitness = genome.fitness / Double(self.database.population)
+            genome.adjustedFitness = (genome.fitness / genomeAmount)// * fitnessToAdjust
+            //genome.adjustedFitness = (genome.fitness / Double(self.database.population))
             
             tot += genome.adjustedFitness
             genomePool += [genome]
@@ -105,7 +106,7 @@ public class NSpecies {
         self.averageFitness = newAverageFitness
         self.averageAdjustedFitness = newAverageAdjustedFitness
         
-        return newAverageAdjustedFitness
+        return averageFitness
     }
     
     func setSpawnAmounts(globalAdjustedFitness: Double) {
@@ -117,7 +118,8 @@ public class NSpecies {
         
         self.genomes.traverseKeysInOrder { key in
             let genome = genomes.value(for: key)!
-            tot += (genome.adjustedFitness / self.averageAdjustedFitness)
+            
+            tot += (genome.adjustedFitness / globalAdjustedFitness)
             
             varianceSum += (genome.fitness-self.averageFitness)*(genome.fitness-self.averageFitness)
         }
@@ -133,6 +135,7 @@ public class NSpecies {
          }
          */
         self.amountToSpawn = round(tot)
+        if self.amountToSpawn.isNaN { self.amountToSpawn = 0 }
         
         //print("Amount to spawn: \(amountToSpawn)")
         
@@ -148,7 +151,8 @@ public class NSpecies {
         
         if genomeKeys.count >= 9 {
             for key in genomeKeys {
-                if genomes.value(for: key)!.fitness < fitnessThreshold && genomes.value(for: key)!.fitness != self.bestFitness {
+                let genome = genomes.value(for: key)!
+                if genome.fitness < fitnessThreshold && genome.fitness < self.bestFitness {
                     self.keysRemoved += [key]
                     self.genomes.remove(key)
                     counter -= 1
@@ -190,7 +194,7 @@ public class NSpecies {
                 let child = crossOver(g1: genomeA, g2: genomeB, database: database)
                 /*
                  if normalRandom() <= 0.25 {
-                 child.mutate(database: database)
+                 //child.mutate(database: database)
                  }
                  */
                 //child.mutate(database: database)
@@ -220,7 +224,7 @@ public class NSpecies {
         
         let otherGenomesToMutateCount = round(Double(remainingMemberKeys.count) * 0.99)
         
-        if otherGenomesToMutateCount > 1 {
+        if otherGenomesToMutateCount > 0 {
             for _ in 1...Int(otherGenomesToMutateCount) {
                 let randIndex = randomInt(min: 0, max: remainingMemberKeys.count)
                 let genome = self.genomes.value(for: remainingMemberKeys[randIndex])!
