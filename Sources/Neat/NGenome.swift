@@ -2,13 +2,13 @@ import Foundation
 
 public class NGenome {
     
-    var id: Int = 0
+    public var id: Int = 0
     
-    var nodes = [NNode]()
-    var links: BTree<Int, NLink> = BTree(order: BTREEORDER)!
+    public var nodes = [NNode]()
+    public var links: BTree<Int, NLink> = BTree(order: BTREEORDER)!
     
-    var fitness = 0.0
-    var adjustedFitness = 0.0
+    public var fitness = 0.0
+    public var adjustedFitness = 0.0
     
     init(id: Int, inputs: Int, outputs: Int, database: NDatabase) {
         self.id = id
