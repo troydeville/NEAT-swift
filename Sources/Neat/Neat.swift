@@ -31,16 +31,14 @@ public class Neat {
         return [Double]()
     }
     
-    public func run(inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int) {
+    public func run(inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int, testType: NTestType) {
         if multithread {
-            let testType = NTestType.distanceSquared
             networkM!.run(inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType)
         }
     }
     
-    public func testNetwork(genome: NGenome, inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int) {
+    public func testNetwork(genome: NGenome, inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int, testType: NTestType) {
         if multithread {
-            let testType = NTestType.distanceSquared
             self.networkM?.testNetwork(genome: genome, inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType)
         }
     }
@@ -81,7 +79,7 @@ extension Neat: CustomStringConvertible {
             //let keyDescription = "Genomes: \(self.currentGenomeKeys)\nInnovations: \(self.database.description)"
             var speciesDescription = ""
             //let sKeys = self.species.inorderArrayFromKeys
-
+            
             
             networkS!.species.traverseKeysInOrder { key in
                 let s = networkS!.species.value(for: key)!

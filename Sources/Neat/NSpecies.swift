@@ -192,11 +192,12 @@ public class NSpecies {
                 let genomeA = self.genomes.value(for: remainingMemberKeys[randomKeyA])!
                 let genomeB = self.genomes.value(for: remainingMemberKeys[randomKeyB])!
                 let child = crossOver(g1: genomeA, g2: genomeB, database: database)
-                /*
-                 if normalRandom() <= 0.25 {
-                 //child.mutate(database: database)
-                 }
-                 */
+                
+                if normalRandom() <= 0.25 {
+                    child.mutate(database: database)
+                }
+                
+                
                 //child.mutate(database: database)
                 self.genomes.insert(child, for: child.id)
                 self.referenceToReturnAfterRestoringTheDead += [child]
@@ -222,7 +223,7 @@ public class NSpecies {
             
         }
         
-        let otherGenomesToMutateCount = round(Double(remainingMemberKeys.count) * 0.99)
+        let otherGenomesToMutateCount = round(Double(remainingMemberKeys.count) * 0.75)
         
         if otherGenomesToMutateCount > 0 {
             for _ in 1...Int(otherGenomesToMutateCount) {

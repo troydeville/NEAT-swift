@@ -7,6 +7,7 @@ public class NeatTaskObject {
     
     init() { }
     
+    
     public func task(_ neatTask: @escaping() -> Void) {
         neatTask()
         self.taskComplete = true

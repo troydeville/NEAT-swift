@@ -9,6 +9,7 @@ final class NeatTests: XCTestCase {
         // results.
         //XCTAssertEqual(Neat(inputs: 2, outputs: 1, population: 200).network.populationCount(), 200)
         //XCTAssertNoThrow(Neat(inputs: 2, outputs: 1, population: 200).network.populationCount())
+        
     }
 
 

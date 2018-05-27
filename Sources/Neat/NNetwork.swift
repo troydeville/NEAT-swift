@@ -13,10 +13,10 @@ public struct NNetwork {
         self.nodeIds.removeAll()
         
         /*
-        for node in genome.getNodes() {
-            self.nodes.insert(node, for: node.id)
-        }
-        */
+         for node in genome.getNodes() {
+         self.nodes.insert(node, for: node.id)
+         }
+         */
         let testNodes = genome.getNodes()
         
         let _ = testNodes.map { node in
@@ -34,21 +34,21 @@ public struct NNetwork {
             toNode.appendIncommingLink(link: link)
             self.nodes.insert(toNode, for: link.to)
         }
- /*
-        for l in self.links.inorderArrayFromKeys {
-            let link = self.links.value(for: l)!
-            
-            //print("\(link.from):\(link.to)")
-            
-            var fromNode = self.nodes.value(for: link.from)!
-            fromNode.appendOutgoingLink(link: link)
-            self.nodes.insert(fromNode, for: link.from)
-            
-            var toNode = self.nodes.value(for: link.to)!
-            toNode.appendIncommingLink(link: link)
-            self.nodes.insert(toNode, for: link.to)
-        }
- */
+        /*
+         for l in self.links.inorderArrayFromKeys {
+         let link = self.links.value(for: l)!
+         
+         //print("\(link.from):\(link.to)")
+         
+         var fromNode = self.nodes.value(for: link.from)!
+         fromNode.appendOutgoingLink(link: link)
+         self.nodes.insert(fromNode, for: link.from)
+         
+         var toNode = self.nodes.value(for: link.to)!
+         toNode.appendIncommingLink(link: link)
+         self.nodes.insert(toNode, for: link.to)
+         }
+         */
         
         nodeIds = self.nodes.inorderArrayFromKeys
     }
@@ -101,17 +101,17 @@ public struct NNetwork {
                 }
                 
                 /*
-                let linkKeys = self.links.inorderArrayFromKeys
-                for lnk in linkKeys {
-                    let link = self.links.value(for: lnk)!
-                    let weight = link.weight
-                    
-                    // get node output from link_from_nodeID
-                    let node = self.nodes.value(for: link.from)!
-                    let output = node.output
-                    
-                    sum += weight * output
-                }
+                 let linkKeys = self.links.inorderArrayFromKeys
+                 for lnk in linkKeys {
+                 let link = self.links.value(for: lnk)!
+                 let weight = link.weight
+                 
+                 // get node output from link_from_nodeID
+                 let node = self.nodes.value(for: link.from)!
+                 let output = node.output
+                 
+                 sum += weight * output
+                 }
                  */
                 var node = self.nodes.value(for: nodeIds[cNeuron])!
                 
@@ -158,15 +158,15 @@ public struct NNetwork {
             
         } ///1...flushcount
         /*
-        if networkType == NetworkType.SnapShot {
-            self.nodes.traverseKeysInOrder { key in
-                var theNode = nodes.value(for: key)!
-                theNode.output = 0
-                nodes.remove(theNode.id)
-                nodes.insert(theNode, for: theNode.id)
-            }
-        }
-        */
+         if networkType == NetworkType.SnapShot {
+         self.nodes.traverseKeysInOrder { key in
+         var theNode = nodes.value(for: key)!
+         theNode.output = 0
+         nodes.remove(theNode.id)
+         nodes.insert(theNode, for: theNode.id)
+         }
+         }
+         */
         
         
         if networkType == NetworkType.SnapShot {
@@ -184,23 +184,37 @@ public struct NNetwork {
     
     public  func getDepth() -> Int {
         
-        var depth = 1
+        //var depth = 1
         
-        var lowestPosition: Double = 1000000
+        //var lowestPosition: Double = 1000000
+        
+        var nodePositions = [Double]()
         
         for id in nodeIds {
+            /*
+             let node = nodes.value(for: id)!
+             if node.position.y < lowestPosition && node.position.y > 0 {
+             lowestPosition = node.position.y
+             
+             }
+             */
             let node = nodes.value(for: id)!
-            if node.position.y < lowestPosition && node.position.y > 0 {
-                lowestPosition = node.position.y
-            }
+            nodePositions += [node.position.y]
         }
         
-        // Note: '200' is used because it is the chosen maximum height of the output nodes/neurons.
-        while lowestPosition < 200 {
-            lowestPosition *= 2
-            depth += 1
-        }
-        return depth
+        nodePositions = sortAndRemoveDuplicates(nodePositions)
+        
+        /*
+         print(nodePositions)
+         
+         // Note: '200' is used because it is the chosen maximum height of the output nodes/neurons.
+         while lowestPosition < 200 {
+         lowestPosition *= 2
+         depth += 1
+         }
+         //print("depth: \(depth)")
+         */
+        return nodePositions.count
     }
     
 }

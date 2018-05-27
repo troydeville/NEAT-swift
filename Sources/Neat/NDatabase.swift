@@ -12,17 +12,17 @@ public class NDatabase {
     
     // Variables for configuration file
     /*
-    var perturbMutation = 0.80
-    var addNodeMutation = 0.03
-    var addLinkMutation: Double
-    var enableMutation = 0.3
-    var activationMutation = 0.0
-    var typeMutation = 0.0
-    
-    var perturbAmount = 0.5
-    var activationPerturbAmount = 1.0
-    var timesToFindConnection = 30
-    */
+     var perturbMutation = 0.80
+     var addNodeMutation = 0.03
+     var addLinkMutation: Double
+     var enableMutation = 0.3
+     var activationMutation = 0.0
+     var typeMutation = 0.0
+     
+     var perturbAmount = 0.5
+     var activationPerturbAmount = 1.0
+     var timesToFindConnection = 30
+     */
     
     var perturbMutation: Double
     var addNodeMutation: Double
@@ -41,6 +41,9 @@ public class NDatabase {
     var biasId: Int
     
     init(population: Int, inputs: Int, outputs: Int, config: [String:Double]) {
+        
+        print(config)
+        
         self.genomeID = population
         self.nodeID = inputs + outputs + 1
         self.biasId = inputs + 1
@@ -61,10 +64,9 @@ public class NDatabase {
          "c2": 1.0,
          "c3": 0.00001,
          "threads": 8
- */
+         */
         
         // Variables for configuration file
-        
         self.addNodeMutation = config["nodeMutation"]!
         self.addLinkMutation = config["connectionMutation"]!
         self.perturbMutation = config["weightMutation"]!

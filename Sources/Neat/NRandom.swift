@@ -11,9 +11,9 @@ public func normalRandom() -> Double {
 
 public func NRandom() -> Double {
     if normalRandom() < 0.5 {
-        return normalRandom() * 5
+        return normalRandom() * 1
     } else {
-        return normalRandom() * -1.0 * 5
+        return normalRandom() * -1.0
     }
 }
 
@@ -28,6 +28,7 @@ public func randomInt(min: Int, max: Int) -> Int {
     #endif
     
 }
+
 
 public func NRandomActivationType() -> NActivation {
     switch randomInt(min: 1, max: 7) {
@@ -48,3 +49,25 @@ public func NRandomActivationType() -> NActivation {
     default: return NActivation.sigmoid
     }
 }
+
+/*
+ public func NRandomActivationType() -> NActivation {
+ switch randomInt(min: 1, max: 7) {
+ case 1:
+ return NActivation.sigmoid
+ case 2:
+ return NActivation.sigmoid
+ case 3:
+ return NActivation.sigmoid
+ case 4:
+ return NActivation.sigmoid
+ case 5:
+ return NActivation.sigmoid
+ case 6:
+ return NActivation.sigmoid
+ case 7:
+ return NActivation.sigmoid
+ default: return NActivation.sigmoid
+ }
+ }
+ */

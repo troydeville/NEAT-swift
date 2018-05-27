@@ -16,11 +16,11 @@ public func Add(x: Double, response: Double) -> Double {
 }
 
 public func Sigmoid(x: Double, response: Double) -> Double {
-    return 1 / (1 + exp((-6 - response) * x))
+    return 1 / (1 + exp((-8 * response) * x))
 }
 
 public func Tanh(x: Double, response: Double) -> Double {
-    return tanh(x)
+    return tanh(x*response)
 }
 
 public func Relu(x: Double, response: Double) -> Double {
@@ -31,7 +31,7 @@ public func Relu(x: Double, response: Double) -> Double {
 }
 
 public func Sine(x: Double, response: Double) -> Double {
-    return sin(x)
+    return sin(x*response)
 }
 
 public func Abs(x: Double, response: Double) -> Double {

@@ -1,4 +1,9 @@
+#if os(Linux)
 import Foundation
+import Dispatch
+#else
+import Foundation
+#endif
 
 public class NNeuralNetworkM {
     
@@ -51,6 +56,8 @@ public class NNeuralNetworkM {
     fileprivate var threadGComplete = false
     fileprivate var threadHComplete = false
     
+    var canLeaveSection = false
+    
     public init(inputs: Int, outputs: Int, population: Int, confURL: String) {
         
         self.populationSize = population
@@ -60,12 +67,16 @@ public class NNeuralNetworkM {
         do {
             let data = try Data(contentsOf: url)
             configFile = try JSONDecoder().decode([String : Double].self, from: data)
-        } catch { }// END
+        } catch {
+            print(error)
+            fatalError()
+        }// END
+        
+        
         
         self.database = NDatabase(population: population, inputs: inputs, outputs: outputs, config: configFile)
         
         // Fetch data from config
-        
         threshConf += [configFile["threshHold"]!]
         threshConf += [configFile["c1"]!]
         threshConf += [configFile["c2"]!]
@@ -153,16 +164,21 @@ public class NNeuralNetworkM {
     
     public func run(inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int, testType: NTestType) {
         
+        let group = DispatchGroup()
+        
         func calculateNetwork(threadIndex: Int) {
             
             switch threadIndex {
             case 1:
-                
+                group.enter()
                 threadAComplete = false
+                
+                if self.genomeGroupA.count == 0 { }
                 
                 for genomeIndex in 0..<self.genomeGroupA.count {
                     var total = 0.0
                     
+                    if (genomeGroupA.count - 1) < genomeIndex { break }
                     for i in 0..<inputs.count {
                         var network = NNetwork(genome: self.genomeGroupA[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
@@ -177,27 +193,35 @@ public class NNeuralNetworkM {
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
-                        currentGenomeFitness = 1/total
+                        currentGenomeFitness = abs(Double(expected.count * expected.first!.count) - total)
                     }
                     
                     //print("total: \(total)")
                     
                     self.genomeGroupA[genomeIndex].fitness = currentGenomeFitness
-                    if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
-                        print(self.genomeGroupA[genomeIndex].description)
-                    }
+                    /*
+                     if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
+                     print(self.genomeGroupA[genomeIndex].description)
+                     }
+                     */
+                    
                 }
+                
+                group.leave()
                 threadAComplete = true
             case 2:
+                group.enter()
                 threadBComplete = false
                 for genomeIndex in 0..<self.genomeGroupB.count {
                     var total = 0.0
                     
+                    if (genomeGroupB.count - 1) < genomeIndex { break }
                     for i in 0..<inputs.count {
                         var network = NNetwork(genome: self.genomeGroupB[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
                         for o in 0..<output.count {
                             total += abs(expected[i][o] - output[o])
+                            //print("Expected: \(expected[i][o]), Actual: \(output[o])")
                         }
                     }
                     
@@ -210,16 +234,23 @@ public class NNeuralNetworkM {
                     }
                     
                     self.genomeGroupB[genomeIndex].fitness = currentGenomeFitness
-                    if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
-                        print(self.genomeGroupB[genomeIndex].description)
-                    }
+                    /*
+                     if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
+                     print(self.genomeGroupA[genomeIndex].description)
+                     }
+                     */
+                    
                 }
+                
+                group.leave()
                 threadBComplete = true
             case 3:
+                group.enter()
                 threadCComplete = false
                 for genomeIndex in 0..<self.genomeGroupC.count {
                     var total = 0.0
                     
+                    if (genomeGroupC.count - 1) < genomeIndex { break }
                     for i in 0..<inputs.count {
                         var network = NNetwork(genome: self.genomeGroupC[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
@@ -237,16 +268,23 @@ public class NNeuralNetworkM {
                     }
                     
                     self.genomeGroupC[genomeIndex].fitness = currentGenomeFitness
-                    if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
-                        print(self.genomeGroupC[genomeIndex].description)
-                    }
+                    /*
+                     if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
+                     print(self.genomeGroupA[genomeIndex].description)
+                     }
+                     */
+                    
                 }
+                
+                group.leave()
                 threadCComplete = true
             case 4:
+                group.enter()
                 threadDComplete = false
                 for genomeIndex in 0..<self.genomeGroupD.count {
                     var total = 0.0
                     
+                    if (genomeGroupD.count - 1) < genomeIndex { break }
                     for i in 0..<inputs.count {
                         var network = NNetwork(genome: self.genomeGroupD[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
@@ -264,15 +302,23 @@ public class NNeuralNetworkM {
                     }
                     
                     self.genomeGroupD[genomeIndex].fitness = currentGenomeFitness
-                    if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
-                        print(self.genomeGroupD[genomeIndex].description)
-                    }
+                    /*
+                     if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
+                     print(self.genomeGroupA[genomeIndex].description)
+                     }
+                     */
+                    
                 }
+                
+                group.leave()
                 threadDComplete = true
             case 5:
+                group.enter()
                 threadEComplete = false
                 for genomeIndex in 0..<self.genomeGroupE.count {
                     var total = 0.0
+                    
+                    if (genomeGroupE.count - 1) < genomeIndex { break }
                     for i in 0..<inputs.count {
                         var network = NNetwork(genome: self.genomeGroupE[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
@@ -290,16 +336,23 @@ public class NNeuralNetworkM {
                     }
                     
                     self.genomeGroupE[genomeIndex].fitness = currentGenomeFitness
-                    if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
-                        print(self.genomeGroupE[genomeIndex].description)
-                    }
+                    /*
+                     if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
+                     print(self.genomeGroupA[genomeIndex].description)
+                     }
+                     */
+                    
                 }
+                
+                group.leave()
                 threadEComplete = true
             case 6:
+                group.enter()
                 threadFComplete = false
                 for genomeIndex in 0..<self.genomeGroupF.count {
                     var total = 0.0
                     
+                    if (genomeGroupF.count - 1) < genomeIndex { break }
                     for i in 0..<inputs.count {
                         var network = NNetwork(genome: self.genomeGroupF[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
@@ -317,17 +370,23 @@ public class NNeuralNetworkM {
                     }
                     
                     self.genomeGroupF[genomeIndex].fitness = currentGenomeFitness
-                    if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
-                        print(self.genomeGroupF[genomeIndex].description)
-                    }
+                    /*
+                     if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
+                     print(self.genomeGroupA[genomeIndex].description)
+                     }
+                     */
+                    
                 }
+                
+                group.leave()
                 threadFComplete = true
             case 7:
-                
+                group.enter()
                 threadGComplete = false
                 for genomeIndex in 0..<self.genomeGroupG.count {
                     var total = 0.0
                     
+                    if (genomeGroupG.count - 1) < genomeIndex { break }
                     for i in 0..<inputs.count {
                         var network = NNetwork(genome: self.genomeGroupG[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
@@ -345,16 +404,23 @@ public class NNeuralNetworkM {
                     }
                     
                     self.genomeGroupG[genomeIndex].fitness = currentGenomeFitness
-                    if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
-                        print(self.genomeGroupG[genomeIndex].description)
-                    }
+                    /*
+                     if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
+                     print(self.genomeGroupA[genomeIndex].description)
+                     }
+                     */
+                    
                 }
+                
+                group.leave()
                 threadGComplete = true
             case 8:
+                group.enter()
                 threadHComplete = false
                 for genomeIndex in 0..<self.genomeGroupH.count {
                     var total = 0.0
                     
+                    if (genomeGroupH.count - 1) < genomeIndex { break }
                     for i in 0..<inputs.count {
                         var network = NNetwork(genome: self.genomeGroupH[genomeIndex])
                         let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
@@ -372,10 +438,15 @@ public class NNeuralNetworkM {
                     }
                     
                     self.genomeGroupH[genomeIndex].fitness = currentGenomeFitness
-                    if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
-                        print(self.genomeGroupH[genomeIndex].description)
-                    }
+                    /*
+                     if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
+                     print(self.genomeGroupA[genomeIndex].description)
+                     }
+                     */
+                    
                 }
+                
+                group.leave()
                 threadHComplete = true
             default: break
             }
@@ -383,7 +454,7 @@ public class NNeuralNetworkM {
             
         }
         
-        let group = DispatchGroup()
+        
         /*
          for i in 0..<queues.count {
          queues[i].async(group: group) {
@@ -394,15 +465,16 @@ public class NNeuralNetworkM {
         
         for i in 0..<queues.count {
             //nObj[i].task(networkId: i + 1)
+            
             queues[i].async(group: group, qos: .userInitiated, flags: .enforceQoS) {
                 calculateNetwork(threadIndex: i + 1)
+                
             }
             /*
              queues[i].async(group: group) {
              self.nObj[i].task {
              calculateNetwork(threadIndex: i + 1)
              }
-             
              }
              */
         }
@@ -416,13 +488,22 @@ public class NNeuralNetworkM {
          */
          */
         
-        while !threadAComplete || !threadBComplete || !threadCComplete || !threadDComplete || !threadEComplete || !threadFComplete || !threadGComplete || !threadHComplete {
-        }
         
-        assignToSpecies()
+        //while !threadAComplete || !threadBComplete || !threadCComplete || !threadDComplete || !threadEComplete || !threadFComplete || !threadGComplete || !threadHComplete {}
+        canLeaveSection = false
+        
+        
+        
+        group.notify(queue: .global()) {
+            print("done")
+            self.canLeaveSection = true
+        }
         
         //var network = NNetwork(genome: self.genomes.value(for: currentGenomeId)!)
         //return network.run(inputsIn: inputs, networkType: NetworkType.SnapShot)
+        
+        while !canLeaveSection { }
+        self.assignToSpecies()
     }
     
     public func assignToSpecies() {
@@ -465,6 +546,25 @@ public class NNeuralNetworkM {
         print(self.description)
         
         var tot = 0.0
+        
+        var keysToRemove: [Int] = []
+        
+        self.species.traverseKeysInOrder { key in
+            if species.value(for: key)!.genomes.numberOfKeys == 0 {
+                keysToRemove += [key]
+            }
+            /*
+             else if species.value(for: key)!.amountToSpawn == 0 && species.value(for: key)!.age > 0 {
+             keysToRemove += [key]
+             } else if species.value(for: key)!.bestFitness == 0 && species.value(for: key)!.age > 0 {
+             keysToRemove += [key]
+             }
+             */
+        }
+        
+        for key in keysToRemove {
+            self.species.remove(key)
+        }
         
         self.species.traverseKeysInOrder { key in
             
@@ -525,21 +625,21 @@ public class NNeuralNetworkM {
              }
              */
             
-            if species.amountToSpawn == 0 {
-                //self.species.remove(key)
-            }
-            
-            
         }
         
-        genomeGroupA = [NGenome](); genomeGroupB = [NGenome](); genomeGroupC = [NGenome](); genomeGroupD = [NGenome](); genomeGroupE = [NGenome](); genomeGroupF = [NGenome](); genomeGroupG = [NGenome](); genomeGroupH = [NGenome]();
+        genomeGroupA.removeAll()
+        genomeGroupB.removeAll()
+        genomeGroupC.removeAll()
+        genomeGroupD.removeAll()
+        genomeGroupE.removeAll()
+        genomeGroupF.removeAll()
+        genomeGroupG.removeAll()
+        genomeGroupH.removeAll()
         
         var c = 1
-        var n = 1
         self.genomes.traverseKeysInOrder { key in
             
             let genome = self.genomes.value(for: key)!
-            
             switch c {
             case 1:
                 genomeGroupA += [genome]
@@ -557,12 +657,13 @@ public class NNeuralNetworkM {
                 genomeGroupG += [genome]
             case 8:
                 genomeGroupH += [genome]
-                
             default: break
             }
             
-            if n % threadCount == 0 { c += 1 }
-            n += 1
+            if c % threadCount == 0 {
+                c = 0
+            }
+            c += 1
         }
         /*
          print(genomeGroupA.count)
@@ -621,6 +722,7 @@ extension NNeuralNetworkM: CustomStringConvertible {
         self.species.traverseKeysInOrder { key in
             let s = self.species.value(for: key)!
             speciesDescription += "species -- id: \(s.id), age: \(s.age), contains: \(s.genomes.numberOfKeys), spawn: \(s.amountToSpawn), best: \(s.bestFitness)\n"
+            speciesDescription += "\(s.getLeader().description)"
         }
         /*
          for key in sKeys {
