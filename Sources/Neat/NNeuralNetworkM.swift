@@ -157,6 +157,8 @@ public class NNeuralNetworkM {
             fitness = pow(Double(expected.count * expected.first!.count) - total, 2)
         } else if testType == NTestType.distance {
             fitness = 1/total
+        } else if testType == NTestType.classification {
+            fitness = pow(1 / total, 2)
         }
         
         print("fitness: \(fitness)")
@@ -173,7 +175,7 @@ public class NNeuralNetworkM {
                 group.enter()
                 threadAComplete = false
                 
-                if self.genomeGroupA.count == 0 { }
+                
                 
                 for genomeIndex in 0..<self.genomeGroupA.count {
                     var total = 0.0
@@ -194,6 +196,8 @@ public class NNeuralNetworkM {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
                         currentGenomeFitness = abs(Double(expected.count * expected.first!.count) - total)
+                    } else if testType == NTestType.classification {
+                        currentGenomeFitness = pow(1 / total, 2)
                     }
                     
                     //print("total: \(total)")
@@ -231,6 +235,8 @@ public class NNeuralNetworkM {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
                         currentGenomeFitness = 1/total
+                    } else if testType == NTestType.classification {
+                        currentGenomeFitness = pow(1 / total, 2)
                     }
                     
                     self.genomeGroupB[genomeIndex].fitness = currentGenomeFitness
@@ -265,6 +271,8 @@ public class NNeuralNetworkM {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
                         currentGenomeFitness = 1/total
+                    } else if testType == NTestType.classification {
+                        currentGenomeFitness = pow(1 / total, 2)
                     }
                     
                     self.genomeGroupC[genomeIndex].fitness = currentGenomeFitness
@@ -299,6 +307,8 @@ public class NNeuralNetworkM {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
                         currentGenomeFitness = 1/total
+                    } else if testType == NTestType.classification {
+                        currentGenomeFitness = pow(1 / total, 2)
                     }
                     
                     self.genomeGroupD[genomeIndex].fitness = currentGenomeFitness
@@ -333,6 +343,8 @@ public class NNeuralNetworkM {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
                         currentGenomeFitness = 1/total
+                    } else if testType == NTestType.classification {
+                        currentGenomeFitness = pow(1 / total, 2)
                     }
                     
                     self.genomeGroupE[genomeIndex].fitness = currentGenomeFitness
@@ -367,6 +379,8 @@ public class NNeuralNetworkM {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
                         currentGenomeFitness = 1/total
+                    } else if testType == NTestType.classification {
+                        currentGenomeFitness = pow(1 / total, 2)
                     }
                     
                     self.genomeGroupF[genomeIndex].fitness = currentGenomeFitness
@@ -401,6 +415,8 @@ public class NNeuralNetworkM {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
                         currentGenomeFitness = 1/total
+                    } else if testType == NTestType.classification {
+                        currentGenomeFitness = pow(1 / total, 2)
                     }
                     
                     self.genomeGroupG[genomeIndex].fitness = currentGenomeFitness
@@ -435,6 +451,8 @@ public class NNeuralNetworkM {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
                         currentGenomeFitness = 1/total
+                    } else if testType == NTestType.classification {
+                        currentGenomeFitness = pow(1 / total, 2)
                     }
                     
                     self.genomeGroupH[genomeIndex].fitness = currentGenomeFitness
@@ -722,7 +740,7 @@ extension NNeuralNetworkM: CustomStringConvertible {
         self.species.traverseKeysInOrder { key in
             let s = self.species.value(for: key)!
             speciesDescription += "species -- id: \(s.id), age: \(s.age), contains: \(s.genomes.numberOfKeys), spawn: \(s.amountToSpawn), best: \(s.bestFitness)\n"
-            speciesDescription += "\(s.getLeader().description)"
+            //speciesDescription += "\(s.getLeader().description)"
         }
         /*
          for key in sKeys {

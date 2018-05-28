@@ -97,7 +97,7 @@ public class NGenome {
         }
         if normalRandom() <= database.enableMutation {
             // change enable
-            changeEnable()
+            changeEnable(database: database)
         }
         if normalRandom() <= database.activationMutation {
             // perturb activation response
@@ -165,66 +165,94 @@ public class NGenome {
     
     private func perturbActivationResponse(perturbAmount: Double) {
         
-        var tempPerturbAmount = perturbAmount
-        
         if normalRandom() <= 0.5 {
-            tempPerturbAmount *= -1
-        }
-        
-        var killSwitch = 15
-        for _ in 1...self.nodes.count {
-            var randNodeId = randomInt(min: 0, max: self.nodes.count)
-            //while nodes[randNodeId].type == NType.input || nodes[randNodeId].type == NType.bias || nodes[randNodeId].type == NType.output {
-            while nodes[randNodeId].type == NType.bias {
-                if killSwitch <= 0 { return }
-                randNodeId = randomInt(min: 0, max: self.nodes.count)
-                killSwitch -= 1
-                
+            for nodeId in 0..<self.nodes.count {
+                var node = self.nodes[nodeId]
+                if node.type != NType.bias {
+                    node.activationResponse += perturbAmount
+                    self.nodes[nodeId] = node
+                }
             }
-            //self.nodes[randNodeId].activationResponse += tempPerturbAmount
-            
-            if nodes[randNodeId].type != NType.bias {
-                self.nodes[randNodeId].activationResponse = abs(tempPerturbAmount)
+        } else {
+            for nodeId in 0..<self.nodes.count {
+                var node = self.nodes[nodeId]
+                if node.type != NType.bias {
+                    node.activationResponse -= perturbAmount
+                    self.nodes[nodeId] = node
+                }
             }
-            killSwitch = 15
         }
     }
     
     private func changeType() {
         
-        var randIndex = randomInt(min: 0, max: nodes.count)
-        var killer = 10
-        while self.nodes[randIndex].type == NType.input || self.nodes[randIndex].type == NType.bias || self.nodes[randIndex].type == NType.output {
-            if killer <= 0 { return }
-            randIndex = randomInt(min: 0, max: nodes.count)
-            killer -= 1
+        for nodeId in 0..<self.nodes.count {
+            let node = self.nodes[nodeId]
+            if node.type != NType.input && node.type != NType.bias && node.type != NType.output {
+                self.nodes[nodeId].activation = NRandomActivationType()
+            }
         }
+        /*
+         var randIndex = randomInt(min: 0, max: nodes.count)
+         var killer = 10
+         while self.nodes[randIndex].type == NType.input || self.nodes[randIndex].type == NType.bias || self.nodes[randIndex].type == NType.output {
+         if killer <= 0 { return }
+         randIndex = randomInt(min: 0, max: nodes.count)
+         killer -= 1
+         }
+         */
     }
     
-    private func changeEnable() {
+    private func changeEnable(database: NDatabase) {
         
-        let linkKeys = self.links.inorderArrayFromKeys
-        //let newLinks: BTree<Int, NLink> = BTree(order: BTREEORDER)!
+        var keysToEnable = [Int]()
+        var keysToDisable = [Int]()
         
-        for _ in nodes {
-            var randomId = randomInt(min: 0, max: linkKeys.count)
-            var daLink = links.value(for: linkKeys[randomId])!
-            /*
-             var killer = 10
-             
-             while daLink.enabled {
-             randomId = randomInt(min: 0, max: linkKeys.count)
-             daLink = links.value(for: linkKeys[randomId])!
-             killer -= 1
-             if killer <= 0 { break }
-             }
-             */
-            daLink.enabled = !daLink.enabled
-            self.links.remove(linkKeys[randomId])
-            self.links.insert(daLink, for: daLink.innovation)
+        self.links.traverseKeysInOrder { key in
+            if normalRandom() <= database.addLinkMutation {
+                keysToEnable += [key]
+            } else {
+                keysToDisable += [key]
+            }
         }
         
+        for key in keysToEnable {
+            var link = self.links.value(for: key)!
+            link.enable()
+            self.links.remove(key)
+            self.links.insert(link, for: key)
+        }
         
+        for key in keysToDisable {
+            var link = self.links.value(for: key)!
+            link.disable()
+            self.links.remove(key)
+            self.links.insert(link, for: key)
+        }
+        
+        /*
+         let linkKeys = self.links.inorderArrayFromKeys
+         //let newLinks: BTree<Int, NLink> = BTree(order: BTREEORDER)!
+         
+         for _ in nodes {
+         let randomId = randomInt(min: 0, max: linkKeys.count)
+         var daLink = links.value(for: linkKeys[randomId])!
+         /*
+         var killer = 10
+         
+         while daLink.enabled {
+         randomId = randomInt(min: 0, max: linkKeys.count)
+         daLink = links.value(for: linkKeys[randomId])!
+         killer -= 1
+         if killer <= 0 { break }
+         }
+         */
+         daLink.enabled = !daLink.enabled
+         self.links.remove(linkKeys[randomId])
+         self.links.insert(daLink, for: daLink.innovation)
+         }
+         
+         */
         /*
          for key in linkKeys {
          let link = links.value(for: key)!
@@ -381,7 +409,7 @@ public class NGenome {
                         if nCheck > 1 { break }
                     }
                     
-                    self.links.insert(newLink, for: potentialInnovationId)
+                    self.links.insert(newLink, for: newLink.innovation)
                     //print("Old Link: \(newLink.from):\(newLink.to)")
                     break
                     
@@ -413,7 +441,7 @@ public class NGenome {
             }
             
         } else { // else skip trying to find a connection (maybe add a node instead?)
-            self.addNode(database: database) // May remove this line.
+            //self.addNode(database: database) // May remove this line.
         }
     }
     
