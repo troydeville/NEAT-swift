@@ -30,6 +30,7 @@ public class NDatabase {
     var enableMutation: Double
     var activationMutation: Double
     var typeMutation: Double
+    var recurrentMutation: Double
     
     var perturbAmount: Double
     var activationPerturbAmount: Double
@@ -73,6 +74,7 @@ public class NDatabase {
         self.activationMutation = config["activationMutation"]!
         self.enableMutation = config["enableMutation"]!
         self.typeMutation = config["typeMutation"]!
+        self.recurrentMutation = config["recurrentMutation"]!
         
         self.perturbAmount = config["weightMutation"]!
         self.activationPerturbAmount = config["activationPerturbation"]!
@@ -93,7 +95,7 @@ public class NDatabase {
         } else if let l = link {
             // determine if link exists
             if linkInnovations.value(for: l.innovation) == nil {
-                var innovation = NLinkInnovation(innovationId: l.innovation, nIn: l.from, nOut: l.to, enabled: l.enabled, weight: l.weight)
+                var innovation = NLinkInnovation(innovationId: l.innovation, nIn: l.from, nOut: l.to, enabled: l.enabled, weight: l.weight, recurrent: l.recurrent)
                 innovation.setInnovation(innovationID: self.nextInnovation())
                 linkInnovations.insert(innovation, for: l.innovation)
             } else {
@@ -111,7 +113,7 @@ public class NDatabase {
     }
     
     func insertLink(link: NLink) {
-        let linkInnovation = NLinkInnovation(innovationId: link.innovation, nIn: link.from, nOut: link.to, enabled: link.enabled, weight: link.weight)
+        let linkInnovation = NLinkInnovation(innovationId: link.innovation, nIn: link.from, nOut: link.to, enabled: link.enabled, weight: link.weight, recurrent: link.recurrent)
         self.linkInnovations.insert(linkInnovation, for: link.innovation)
     }
     
@@ -180,6 +182,15 @@ public class NDatabase {
         nodesToCheck = sortAndKeepDuplicates(nodesToCheck)
         
         return nodesToCheck
+    }
+    
+    func getLink(innovation: Int) -> NLink {
+        if self.linkInnovations.value(for: innovation) != nil {// Innovation exists.
+            
+            let link = self.linkInnovations.value(for: innovation)!
+            return NLink(innovation: link.innovationID, to: link.nOut, from: link.nIn, weight: link.weight, enabled: link.enabled, recurrent: link.recurrent)
+            
+        } else { fatalError() }
     }
     
     func getInnovationId(from: Int, to: Int) -> Int {

@@ -10,19 +10,29 @@ public struct NNetwork {
     public init(genome: NGenome) {
         
         self.links = genome.getLinks()
-        self.nodeIds.removeAll()
         
-        /*
-         for node in genome.getNodes() {
-         self.nodes.insert(node, for: node.id)
-         }
-         */
+        var linksToReAdd = [NLink]()
+        
+        self.links.traverseKeysInOrder { key in
+            var link = self.links.value(for: key)!
+            if link.from == link.to {
+                link.recurrent = true
+                linksToReAdd += [link]
+            }
+        }
+        
+        for link in linksToReAdd {
+            self.links.remove(link.innovation)
+            self.links.insert(link, for: link.innovation)
+        }
+        
+        self.nodeIds.removeAll()
+
         let testNodes = genome.getNodes()
         
         let _ = testNodes.map { node in
             self.nodes.insert(node, for: node.id)
         }
-        //print(self.nodes)
         
         self.links.traverseKeysInOrder { key in
             let link = self.links.value(for: key)!
@@ -36,136 +46,8 @@ public struct NNetwork {
             self.nodes.insert(toNode, for: link.to)
         }
         
-        /*
-         
-         for l in self.links.inorderArrayFromKeys {
-         let link = self.links.value(for: l)!
-         
-         //print("\(link.from):\(link.to)")
-         
-         var fromNode = self.nodes.value(for: link.from)!
-         fromNode.appendOutgoingLink(link: link)
-         self.nodes.insert(fromNode, for: link.from)
-         
-         var toNode = self.nodes.value(for: link.to)!
-         toNode.appendIncommingLink(link: link)
-         self.nodes.insert(toNode, for: link.to)
-         }
-         */
-        
         nodeIds = self.nodes.inorderArrayFromKeys
     }
-    
-    /*
-     
-     public mutating func run(inputsIn: [Double], networkType: NetworkType) -> [Double] {
-     var outputs = [Double]()
-     
-     var flushcount = 0
-     
-     if networkType == NetworkType.SnapShot {
-     flushcount = getDepth()
-     } else {
-     flushcount = 1
-     }
-     
-     for _ in 1...flushcount {
-     
-     outputs.removeAll()
-     
-     var cNeuron = 0
-     
-     for i in 1...inputsIn.count {
-     var node = nodes.value(for: i)!
-     node.output = inputsIn[i - 1]
-     self.nodes.remove(i)
-     self.nodes.insert(node, for: node.id)
-     cNeuron += 1
-     }
-     // Setup Bias Neuron
-     for i in inputsIn.count+1...inputsIn.count+1 {
-     var node = nodes.value(for: i)!
-     node.output = 1
-     self.nodes.remove(i)
-     self.nodes.insert(node, for: node.id)
-     cNeuron += 1
-     }
-     
-     while cNeuron < nodeIds.count {
-     var sum = 0.0
-     
-     self.links.traverseKeysInOrder { key in
-     
-     let link = self.links.value(for: key)!
-     if link.enabled {
-     let weight = link.weight
-     
-     // get node output from link_from_nodeID
-     let node = self.nodes.value(for: link.from)!
-     let output = node.output
-     
-     sum += weight * output
-     }
-     
-     }
-     
-     var node = self.nodes.value(for: nodeIds[cNeuron])!
-     
-     let type = node.activation
-     switch type {
-     case NActivation.sigmoid:
-     node.output = Sigmoid(x: sum, response: node.activationResponse)
-     case NActivation.add:
-     node.output = Add(x: sum, response: node.activationResponse)
-     case NActivation.tanh:
-     node.output = Tanh(x: sum, response: node.activationResponse)
-     case NActivation.relu:
-     node.output = Relu(x: sum, response: node.activationResponse)
-     case NActivation.sine:
-     node.output = Sine(x: sum, response: node.activationResponse)
-     case NActivation.abs:
-     node.output = Abs(x: sum, response: node.activationResponse)
-     case NActivation.square:
-     node.output = Square(x: sum, response: node.activationResponse)
-     }
-     
-     nodes.remove(node.id)
-     nodes.insert(node, for: nodeIds[cNeuron])
-     
-     if node.type == NType.output {
-     outputs += [node.output]
-     }
-     cNeuron += 1
-     }// Next node
-     
-     
-     
-     } ///1...flushcount
-     /*
-     if networkType == NetworkType.SnapShot {
-     self.nodes.traverseKeysInOrder { key in
-     var theNode = nodes.value(for: key)!
-     theNode.output = 0
-     nodes.remove(theNode.id)
-     nodes.insert(theNode, for: theNode.id)
-     }
-     }
-     */
-     
-     if networkType == NetworkType.SnapShot {
-     for key in nodeIds {
-     var theNode = nodes.value(for: key)!
-     theNode.output = 0
-     nodes.remove(theNode.id)
-     nodes.insert(theNode, for: theNode.id)
-     }
-     }
-     
-     
-     return outputs
-     }
-     
-     */
     
     public mutating func run(inputsIn: [Double], networkType: NetworkType) -> [Double] {
         var outputs = [Double]()
@@ -180,70 +62,110 @@ public struct NNetwork {
             flushCount = 1
         }
         
-        
-        for _ in 1...flushCount {
-            outputs.removeAll()
-            
+        for x in 1...flushCount {
             var cNeuron = 0
             
             while self.nodes.value(for: nodePoolIds[cNeuron])!.type == .input {
+                //print("Is an input node")
                 var node = self.nodes.value(for: nodePoolIds[cNeuron])!
                 node.output = inputsIn[cNeuron]
+                node.output = runActivation(activation: node.activation, x: node.output, response: node.activationResponse)
                 self.nodes.remove(node.id)
                 self.nodes.insert(node, for: node.id)
                 cNeuron += 1
-            }
+            } // End input nodes
             
             var biasNode = self.nodes.value(for: nodePoolIds[cNeuron])!
             biasNode.output = 1
             self.nodes.remove(biasNode.id)
+            biasNode.output = runActivation(activation: biasNode.activation, x: biasNode.output, response: biasNode.activationResponse)
             self.nodes.insert(biasNode, for: biasNode.id)
             cNeuron += 1
+            // end bias node
             
-            while cNeuron < nodePoolIds.count {
-                var sum = 0.0
+            var hiddenNode = self.nodes.value(for: nodePoolIds[cNeuron])!
+            
+            var tickPositions: [Double] = []
+            
+            while hiddenNode.type != NType.output {
                 
-                var node = self.nodes.value(for: nodePoolIds[cNeuron])!
-                let nodeLinks = node.incommingLinks
-                for link in nodeLinks {
-                    if link.enabled {
-                        let output = self.nodes.value(for: link.from)!.output
-                        
-                        sum += output * link.weight
-                    }
+                let nodeLinksIn = hiddenNode.incommingLinks
+                
+                for link in nodeLinksIn {
                     
+                    if link.enabled {
+                        if let nodeFrom = self.nodes.value(for: link.from) {
+                            
+                            if (nodeFrom.position.y == hiddenNode.position.y) || (link.from == link.to) || (nodeFrom.position.y > hiddenNode.position.y) { // They are in the same layer.
+                                
+                                if tickPositions.contains(hiddenNode.position.y) {
+                                    
+                                    //let outputWithFunction = runActivation(activation: nodeFrom.activation, x: nodeFrom.output, response: nodeFrom.activationResponse)
+                                    hiddenNode.output += nodeFrom.output * link.weight
+                                    hiddenNode.output = runActivation(activation: hiddenNode.activation, x: hiddenNode.output, response: hiddenNode.activationResponse)
+                                    tickPositions.removeFirst()
+                                    
+                                } else {
+                                    tickPositions += [hiddenNode.position.y]
+                                }
+                                
+                            } else {
+                                hiddenNode.output += nodeFrom.output * link.weight
+                                hiddenNode.output = runActivation(activation: hiddenNode.activation, x: hiddenNode.output, response: hiddenNode.activationResponse)
+                            }
+                        } else {
+                            fatalError()
+                        }
+                        
+                    }
                 }
-                
-                let type = node.activation
-                switch type {
-                case NActivation.sigmoid:
-                    node.output = Sigmoid(x: sum, response: node.activationResponse)
-                case NActivation.add:
-                    node.output = Add(x: sum, response: node.activationResponse)
-                case NActivation.tanh:
-                    node.output = Tanh(x: sum, response: node.activationResponse)
-                case NActivation.relu:
-                    node.output = Relu(x: sum, response: node.activationResponse)
-                case NActivation.sine:
-                    node.output = Sine(x: sum, response: node.activationResponse)
-                case NActivation.abs:
-                    node.output = Abs(x: sum, response: node.activationResponse)
-                case NActivation.square:
-                    node.output = Square(x: sum, response: node.activationResponse)
-                }
-                
-                nodes.remove(nodePoolIds[cNeuron])
-                nodes.insert(node, for: nodePoolIds[cNeuron])
-                
-                if node.type == .output {
-                    outputs += [node.output]
-                }
-                
+                self.nodes.remove(hiddenNode.id)
+                self.nodes.insert(hiddenNode, for: hiddenNode.id)
                 cNeuron += 1
+                hiddenNode = self.nodes.value(for: nodePoolIds[cNeuron])!
+            } // End hidden nodes
+            
+            if x == flushCount { // Run sum up output nodes.
+                while cNeuron < nodePoolIds.count {
+                    var outputNode = self.nodes.value(for: nodePoolIds[cNeuron])!
+                    
+                    let nodeLinksIn = outputNode.incommingLinks
+                    
+                    for link in nodeLinksIn {
+                        if link.enabled {
+                            let nodeFrom = self.nodes.value(for: link.from)!
+                            //let outputWithFunction = runActivation(activation: nodeFrom.activation, x: nodeFrom.output, response: nodeFrom.activationResponse)
+                            outputNode.output += nodeFrom.output * link.weight
+                            outputNode.output = runActivation(activation: outputNode.activation, x: outputNode.output, response: outputNode.activationResponse)
+                        }
+                    }
+                    outputs += [outputNode.output]
+                    
+                    cNeuron += 1
+                }
             }
         }
-        
         return outputs
+    }
+    
+    
+    private func runActivation(activation: NActivation, x: Double, response: Double) -> Double {
+        switch activation {
+        case NActivation.sigmoid:
+            return(Sigmoid(x: x, response: response))
+        case NActivation.add:
+            return(Add(x: x, response: response))
+        case NActivation.tanh:
+            return(Tanh(x: x, response: response))
+        case NActivation.relu:
+            return(Relu(x: x, response: response))
+        case NActivation.sine:
+            return(Sine(x: x, response: response))
+        case NActivation.abs:
+            return(Abs(x: x, response: response))
+        case NActivation.square:
+            return(Square(x: x, response: response))
+        }
     }
     
     public  func getDepth() -> Int {
@@ -263,41 +185,8 @@ public struct NNetwork {
         }
         nodePositions = sortAndRemoveDuplicates(nodePositions)
         
-        /*
-         print(nodePositions)
-         
-         // Note: '200' is used because it is the chosen maximum height of the output nodes/neurons.
-         while lowestPosition < 200 {
-         lowestPosition *= 2
-         depth += 1
-         }
-         //print("depth: \(depth)")
-         */
         return nodePositions.count - 1
     }
-    /*
-     public mutating func run(inputsIn: [Double], networkType: NetworkType) -> [Double] {
-     var outputs = [Double]()
-     
-     let nodeIdsByLayer = self.getNodeIdsByLayer()
-     
-     var inputCounter = 0
-     for layer in nodeIdsByLayer {
-     for nodeId in layer {
-     var node = self.nodes.value(for: nodeId)!           // GET NODE
-     if node.type == NType.input {
-     node.output = inputsIn[inputCounter]            // ADD INPUT TO INPUT NODES
-     inputCounter += 1
-     } else if node.type == NType.hidden {
-     node.output +=
-     }
-     }
-     }
-     
-     return outputs
-     }
-     
-     */
     
     func getNodeIdsByLayer() -> [[Int]] {
         
@@ -333,13 +222,7 @@ public struct NNetwork {
         
         return nodesByLayer
     }
-    
-    
-    
-    
-    
-    
-    
+
     func getNodeIdsInOrder() -> [Int] {
         var layerNodesAndPositions = [NNetworkNode]()
         var nodeIdsToPass = [Int]()

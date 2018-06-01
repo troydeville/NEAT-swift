@@ -15,6 +15,7 @@ public class NNeuralNetworkM {
     
     // Network's King Genome and Fitness Score
     public var king = NGenome()
+    public var Master = NGenome()
     public var topFitnessScore = 0.0
     
     private var currentGenomeKeys = [Int]()
@@ -156,7 +157,7 @@ public class NNeuralNetworkM {
         if testType == NTestType.distanceSquared {
             fitness = pow(Double(expected.count * expected.first!.count) - total, 2)
         } else if testType == NTestType.distance {
-            fitness = 1/total
+            fitness = abs(Double(expected.count * expected.first!.count) - total)
         } else if testType == NTestType.classification {
             fitness = pow(1 / total, 2)
         }
@@ -174,8 +175,6 @@ public class NNeuralNetworkM {
             case 1:
                 group.enter()
                 threadAComplete = false
-                
-                
                 
                 for genomeIndex in 0..<self.genomeGroupA.count {
                     var total = 0.0
@@ -203,11 +202,6 @@ public class NNeuralNetworkM {
                     //print("total: \(total)")
                     
                     self.genomeGroupA[genomeIndex].fitness = currentGenomeFitness
-                    /*
-                     if currentGenomeFitness > pow(Double(expected.count * expected.first!.count), 2)*0.97 {
-                     print(self.genomeGroupA[genomeIndex].description)
-                     }
-                     */
                     
                 }
                 
@@ -234,7 +228,7 @@ public class NNeuralNetworkM {
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
-                        currentGenomeFitness = 1/total
+                        currentGenomeFitness = abs(Double(expected.count * expected.first!.count) - total)
                     } else if testType == NTestType.classification {
                         currentGenomeFitness = pow(1 / total, 2)
                     }
@@ -270,7 +264,7 @@ public class NNeuralNetworkM {
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
-                        currentGenomeFitness = 1/total
+                        currentGenomeFitness = abs(Double(expected.count * expected.first!.count) - total)
                     } else if testType == NTestType.classification {
                         currentGenomeFitness = pow(1 / total, 2)
                     }
@@ -306,7 +300,7 @@ public class NNeuralNetworkM {
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
-                        currentGenomeFitness = 1/total
+                        currentGenomeFitness = abs(Double(expected.count * expected.first!.count) - total)
                     } else if testType == NTestType.classification {
                         currentGenomeFitness = pow(1 / total, 2)
                     }
@@ -342,7 +336,7 @@ public class NNeuralNetworkM {
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
-                        currentGenomeFitness = 1/total
+                        currentGenomeFitness = abs(Double(expected.count * expected.first!.count) - total)
                     } else if testType == NTestType.classification {
                         currentGenomeFitness = pow(1 / total, 2)
                     }
@@ -378,7 +372,7 @@ public class NNeuralNetworkM {
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
-                        currentGenomeFitness = 1/total
+                        currentGenomeFitness = abs(Double(expected.count * expected.first!.count) - total)
                     } else if testType == NTestType.classification {
                         currentGenomeFitness = pow(1 / total, 2)
                     }
@@ -414,7 +408,7 @@ public class NNeuralNetworkM {
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
-                        currentGenomeFitness = 1/total
+                        currentGenomeFitness = abs(Double(expected.count * expected.first!.count) - total)
                     } else if testType == NTestType.classification {
                         currentGenomeFitness = pow(1 / total, 2)
                     }
@@ -450,7 +444,7 @@ public class NNeuralNetworkM {
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
                     } else if testType == NTestType.distance {
-                        currentGenomeFitness = 1/total
+                        currentGenomeFitness = abs(Double(expected.count * expected.first!.count) - total)
                     } else if testType == NTestType.classification {
                         currentGenomeFitness = pow(1 / total, 2)
                     }
@@ -472,15 +466,6 @@ public class NNeuralNetworkM {
             
         }
         
-        
-        /*
-         for i in 0..<queues.count {
-         queues[i].async(group: group) {
-         calculateNetwork(threadIndex: i + 1)
-         }
-         }
-         */
-        
         for i in 0..<queues.count {
             //nObj[i].task(networkId: i + 1)
             
@@ -488,39 +473,21 @@ public class NNeuralNetworkM {
                 calculateNetwork(threadIndex: i + 1)
                 
             }
-            /*
-             queues[i].async(group: group) {
-             self.nObj[i].task {
-             calculateNetwork(threadIndex: i + 1)
-             }
-             }
-             */
         }
         
-        /*
-         nObj[i].task(networkId: i + 1)
-         /*
-         DispatchQueue.global(qos: .userInitiated).async {
-         //print("task \(i + 1) done.")
-         }
-         */
-         */
-        
-        
-        //while !threadAComplete || !threadBComplete || !threadCComplete || !threadDComplete || !threadEComplete || !threadFComplete || !threadGComplete || !threadHComplete {}
         canLeaveSection = false
         
-        
-        
         group.notify(queue: .global()) {
-            print("done")
             self.canLeaveSection = true
         }
         
         //var network = NNetwork(genome: self.genomes.value(for: currentGenomeId)!)
         //return network.run(inputsIn: inputs, networkType: NetworkType.SnapShot)
         
+        //self.king = findKing()
+        
         while !canLeaveSection { }
+        
         self.assignToSpecies()
     }
     
@@ -567,27 +534,38 @@ public class NNeuralNetworkM {
         
         var keysToRemove: [Int] = []
         
+        var keyWithHighestFitness = -1
+        
+        var highestFound = 0.0
+        
         self.species.traverseKeysInOrder { key in
-            if species.value(for: key)!.genomes.numberOfKeys == 0 {
+            
+            let s = self.species.value(for: key)!
+            
+            if s.King.fitness > highestFound {
+                keyWithHighestFitness = key
+                highestFound = s.King.fitness
+            }
+            
+            if s.genomes.numberOfKeys == 0 {
                 keysToRemove += [key]
             }
-            /*
-             else if species.value(for: key)!.amountToSpawn == 0 && species.value(for: key)!.age > 0 {
-             keysToRemove += [key]
-             } else if species.value(for: key)!.bestFitness == 0 && species.value(for: key)!.age > 0 {
-             keysToRemove += [key]
-             }
-             */
         }
+        
+        if keyWithHighestFitness != -1 {
+            self.Master = self.species.value(for: keyWithHighestFitness)!.King.copy()
+        }
+        
         
         for key in keysToRemove {
             self.species.remove(key)
         }
         
         self.species.traverseKeysInOrder { key in
-            
             tot += self.species.value(for: key)!.adjustFitnesses()
+            
         }
+        
         
         tot /= Double(self.populationSize)
         
@@ -597,10 +575,6 @@ public class NNeuralNetworkM {
             
             species.setSpawnAmounts(globalAdjustedFitness: tot)
             species.incrimentAge()
-            
-            
-            
-            //print(self.description)
             
             // get each species to eliminate it's lowest performing members
             species.removeLowestPerformingMembers()
@@ -630,6 +604,7 @@ public class NNeuralNetworkM {
             // reset the keys
             self.currentGenomeKeys = self.genomes.inorderArrayFromKeys
             self.currentGenomeId = self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
+            
             
             // set the king
             self.king = self.findKing()
@@ -742,12 +717,18 @@ extension NNeuralNetworkM: CustomStringConvertible {
             speciesDescription += "species -- id: \(s.id), age: \(s.age), contains: \(s.genomes.numberOfKeys), spawn: \(s.amountToSpawn), best: \(s.bestFitness)\n"
             //speciesDescription += "\(s.getLeader().description)"
         }
+        
+        var genomeDescription = ""
+        self.genomes.traverseKeysInOrder { key in
+            let g = self.genomes.value(for: key)!
+            genomeDescription += "ID: \(g.id), fitness: \(g.fitness), \nDescription:\n\(g.description)"
+        }
         /*
          for key in sKeys {
          let s = self.species.value(for: key)!
          speciesDescription += "species -- id: \(s.id), age: \(s.age), spawn: \(s.amountToSpawn), best: \(s.bestFitness)\n"
          }
          */
-        return "\n" + speciesDescription + "\n"
+        return "\n" + speciesDescription + "\n"// + genomeDescription + "\n"
     }
 }

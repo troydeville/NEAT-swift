@@ -9,6 +9,8 @@ public class NSpecies {
     var genomePool = [NGenome]()
     var leader: NGenome
     
+    public var King: NGenome = NGenome()
+    
     var bestFitness = 0.0
     var variance = 0.0
     var averageFitness = 0.0
@@ -90,6 +92,7 @@ public class NSpecies {
             
             if genome.fitness > self.bestFitness {
                 self.bestFitness = genome.fitness
+                self.King = genome.copy()
             }
         }
         
@@ -145,22 +148,66 @@ public class NSpecies {
     func removeLowestPerformingMembers() {
         
         // remove all genomes whose fitness is less than the average fitness minus the variance
-        let fitnessThreshold = self.averageFitness + self.variance
-        let genomeKeys = self.genomes.inorderArrayFromKeys
+        //let fitnessThreshold = self.averageFitness - variance
+        var genomeKeys = [Int]()
+        
+        var genomesToUse = [NGenome]()
+        
+        self.genomes.traverseKeysInOrder { key in
+            genomesToUse += [self.genomes.value(for: key)!]
+        }
+        
+        genomesToUse.sort { g1, g2 in
+            g1.fitness < g2.fitness
+        }
+        
+        for genome in genomesToUse {
+            genomeKeys += [genome.id]
+        }
+        
         var counter = Double(genomeKeys.count) * 0.80
         
         if genomeKeys.count >= 9 {
+            /*
+             for _ in 1...tempGenomePool.count {
+             let genomeToRemove = tempGenomePool.last!
+             self.keysRemoved += [ genomeToRemove.id ]
+             self.genomes.remove(genomeToRemove.id)
+             print("THIS KEY?")
+             counter -= 1
+             if counter < 0.5 {
+             break
+             }
+             }
+             */
+            //genomeKeys.reverse()
+            
             for key in genomeKeys {
                 let genome = genomes.value(for: key)!
-                if genome.fitness < fitnessThreshold && genome.fitness < self.bestFitness {
+                if genome.fitness < self.bestFitness {
                     self.keysRemoved += [key]
                     self.genomes.remove(key)
                     counter -= 1
-                    if counter < 0.5 {
+                    if counter <= 2.0 {
                         break
                     }
                 }
+                
             }
+            
+            /*
+             for key in genomeKeys {
+             let genome = genomes.value(for: key)!
+             if genome.fitness < fitnessThreshold && genome.fitness < self.bestFitness {
+             self.keysRemoved += [key]
+             self.genomes.remove(key)
+             counter -= 1
+             if counter < 0.5 {
+             break
+             }
+             }
+             }
+             */
         }
         
         //print("Average fitness: \(self.averageFitness)\nFitness Variance: \(self.variance)")
@@ -174,35 +221,51 @@ public class NSpecies {
         
         var remainingMemberKeys = self.genomes.inorderArrayFromKeys
         
-        //print("Remaining member: \(remainingMemberKeys.count)")
-        
-        
-        
         /* Every child created has the chance to be mutated. */
         if removedGenomeAmount > 0 && remainingMemberKeys.count > 1 {
             
             for _ in 1...removedGenomeAmount {
                 
-                // Grab a random member from the remaining population
-                let randomKeyA = randomInt(min: 0, max: remainingMemberKeys.count)
-                var randomKeyB = randomInt(min: 0, max: remainingMemberKeys.count)
-                while randomKeyA == randomKeyB {
-                    randomKeyB = randomInt(min: 0, max: remainingMemberKeys.count)
-                }
-                let genomeA = self.genomes.value(for: remainingMemberKeys[randomKeyA])!
-                let genomeB = self.genomes.value(for: remainingMemberKeys[randomKeyB])!
-                let child = crossOver(g1: genomeA, g2: genomeB, database: database)
-                
-                if normalRandom() <= 0.25 {
+                if normalRandom() <= 0.75 {
+                    // Grab a random member from the remaining population
+                    let randomKeyA = randomInt(min: 0, max: remainingMemberKeys.count)
+                    var randomKeyB = randomInt(min: 0, max: remainingMemberKeys.count)
+                    while randomKeyA == randomKeyB {
+                        randomKeyB = randomInt(min: 0, max: remainingMemberKeys.count)
+                    }
+                    let genomeA = self.genomes.value(for: remainingMemberKeys[randomKeyA])!
+                    let genomeB = self.genomes.value(for: remainingMemberKeys[randomKeyB])!
+                    let child = crossOver(g1: genomeA, g2: genomeB, database: database)
                     child.mutate(database: database)
+                    //print("Just mutated...1")
+                    self.genomes.insert(child, for: child.id)
+                    self.referenceToReturnAfterRestoringTheDead += [child]
+                } else {
+                    // Grab a random member from the remaining population
+                    let randomKey = randomInt(min: 0, max: remainingMemberKeys.count)
+                    
+                    let genome = self.genomes.value(for: remainingMemberKeys[randomKey])!
+                    
+                    let genomeLinks = genome.getLinks()
+                    let newLinks: BTree<Int, NLink> = BTree(order: BTREEORDER)!
+                    
+                    genomeLinks.traverseKeysInOrder { key in
+                        let genomeLink = genomeLinks.value(for: key)!
+                        let newChildLink = database.getLink(innovation: genomeLink.innovation)
+                        //let newChildlink = NLink(innovation: genomeLink.innovation, to: genomeLink.to, from: genomeLink.from, weight: genomeLink.weight, enabled: genomeLink.enabled, recurrent: genomeLink.recurrent)
+                        //let newChildlink = NLink(innovation: genomeLink.innovation, to: genomeLink.to, from: genomeLink.from)
+                        newLinks.insert(newChildLink, for: newChildLink.innovation)
+                    }
+                    
+                    let newChildGenome = NGenome(id: database.nextGenomeId(), nodes: genome.getNodes(), links: newLinks, fitness: 0.0)
+                    newChildGenome.mutate(database: database)
+                    //print("Just mutated...2")
+                    self.genomes.insert(newChildGenome, for: newChildGenome.id)
+                    self.referenceToReturnAfterRestoringTheDead += [newChildGenome]
                 }
-                
-                
-                //child.mutate(database: database)
-                self.genomes.insert(child, for: child.id)
-                self.referenceToReturnAfterRestoringTheDead += [child]
                 
             }
+            
         } else if removedGenomeAmount > 0 {
             //print("Amount to remove: \(removedGenomeAmount)")
             for _ in 1...removedGenomeAmount {
@@ -212,30 +275,33 @@ public class NSpecies {
                 
                 kingLinks.traverseKeysInOrder { key in
                     let kingLink = kingLinks.value(for: key)!
-                    let newChildlink = NLink(innovation: kingLink.innovation, to: kingLink.to, from: kingLink.from)
-                    newLinks.insert(newChildlink, for: newChildlink.innovation)
+                    let newChildLink = database.getLink(innovation: kingLink.innovation)
+                    //let newChildlink = NLink(innovation: kingLink.innovation, to: kingLink.to, from: kingLink.from, weight: kingLink.weight, enabled: kingLink.enabled, recurrent: kingLink.recurrent)
+                    //let newChildlink = NLink(innovation: kingLink.innovation, to: kingLink.to, from: kingLink.from)
+                    newLinks.insert(newChildLink, for: newChildLink.innovation)
                 }
                 let newChildGenome = NGenome(id: database.nextGenomeId(), nodes: self.getLeader().getNodes(), links: newLinks, fitness: 0.0)
                 newChildGenome.mutate(database: database)
+                //print("Just mutated...3")
                 self.genomes.insert(newChildGenome, for: newChildGenome.id)
                 self.referenceToReturnAfterRestoringTheDead += [newChildGenome]
             }
             
         }
-        
-        let otherGenomesToMutateCount = round(Double(remainingMemberKeys.count) * 0.75)
-        
-        if otherGenomesToMutateCount > 0 {
-            for _ in 1...Int(otherGenomesToMutateCount) {
-                let randIndex = randomInt(min: 0, max: remainingMemberKeys.count)
-                let genome = self.genomes.value(for: remainingMemberKeys[randIndex])!
-                if genome.fitness < self.bestFitness {
-                    genome.mutate(database: database)
-                }
-                remainingMemberKeys.remove(at: randIndex)
-            }
-        }
-        
+        /*
+         let otherGenomesToMutateCount = round(Double(remainingMemberKeys.count) * 0.25)
+         
+         if otherGenomesToMutateCount > 0 {
+         for _ in 1...Int(otherGenomesToMutateCount) {
+         let randIndex = randomInt(min: 0, max: remainingMemberKeys.count)
+         let genome = self.genomes.value(for: remainingMemberKeys[randIndex])!
+         if genome.fitness < self.bestFitness {
+         genome.mutate(database: database)
+         }
+         remainingMemberKeys.remove(at: randIndex)
+         }
+         }
+         */
     }
     
     func getReferenceOfTheNewChildren() -> [NGenome] {
@@ -311,12 +377,16 @@ public class NSpecies {
         /* Start of creating the child links. */
         for innovationId in matchingGenes {
             
-            let g1Link = database.linkInnovations.value(for: innovationId)!
-            var g1ChildLink = NLink(innovation: innovationId, to: g1Link.nOut, from: g1Link.nIn)
+            //let g1Link = database.linkInnovations.value(for: innovationId)!
+            var g1ChildLink = database.getLink(innovation: innovationId)
+            
+            //var g1ChildLink = NLink(innovation: innovationId, to: g1Link.nOut, from: g1Link.nIn, weight: g1Link.weight, enabled: g1Link.enabled, recurrent: g1Link.recurrent)
             let g2Link = database.linkInnovations.value(for: innovationId)!
-            var g2ChildLink = NLink(innovation: innovationId, to: g2Link.nOut, from: g2Link.nIn)
+            
+            var g2ChildLink = database.getLink(innovation: g2Link.innovationID)
+            //var g2ChildLink = NLink(innovation: g2Link.innovationID, to: g2Link.nOut, from: g2Link.nIn, weight: g2Link.weight, enabled: g2Link.enabled, recurrent: g2Link.recurrent)
             var eitherGenomeGeneWasDisabled = false
-            if !g1Link.enabled || !g2Link.enabled { eitherGenomeGeneWasDisabled = true }
+            if !g1ChildLink.enabled || !g2ChildLink.enabled { eitherGenomeGeneWasDisabled = true }
             // If parent 1 or parent 2 gene is disabled, then disable child gene
             if normalRandom() <= 0.5 {
                 if eitherGenomeGeneWasDisabled { if normalRandom() <= 0.75 { g1ChildLink.disable() } }
@@ -330,21 +400,33 @@ public class NSpecies {
         if g1.fitness > g2.fitness {        // Use g1's unmatching genes
             for innovationId in genomeAUnmatchingGenes { // using g1's innovations here
                 let g1Link = database.linkInnovations.value(for: innovationId)!
-                var childLink = NLink(innovation: innovationId, to: g1Link.nOut, from: g1Link.nIn)
+                
+                var childLink = NLink(innovation: innovationId, to: g1Link.nOut, from: g1Link.nIn, weight: g1Link.weight, enabled: true, recurrent: g1Link.recurrent)
+                //var childLink = NLink(innovation: innovationId, to: g1Link.nOut, from: g1Link.nIn)
+                
+                
+                
                 if !g1Link.enabled { if normalRandom() <= 0.75 { childLink.disable() } } // by chance, turns child gene off if was off in parent
                 childLinks.insert(childLink, for: innovationId)
             }
         } else if g1.fitness < g2.fitness { // Use g2's unmatching genes
             for innovationId in genomeBUnmatchingGenes { // using g2's innovations here
                 let g2Link = database.linkInnovations.value(for: innovationId)!
-                var childLink = NLink(innovation: innovationId, to: g2Link.nOut, from: g2Link.nIn)
+                
+                var childLink = database.getLink(innovation: innovationId)
+                childLink.enable()
+                
+                //var childLink = NLink(innovation: innovationId, to: g2Link.nOut, from: g2Link.nIn, weight: g2Link.weight, enabled: g2Link.enabled, recurrent: g2Link.recurrent)
+                //var childLink = NLink(innovation: innovationId, to: g2Link.nOut, from: g2Link.nIn)
                 if !g2Link.enabled { if normalRandom() <= 0.75 { childLink.disable() } } // by chance, turns child gene off if was off in parent
                 childLinks.insert(childLink, for: innovationId)
             }
         } else if allUnmatchingGenesCount == 0 && g1.fitness != g2.fitness && genomeAUnmatchingGenes.isEmpty && genomeBUnmatchingGenes.isEmpty {
             for innovationId in genomeBUnmatchingGenes { // using g2's innovations here
                 let g2Link = database.linkInnovations.value(for: innovationId)!
-                var childLink = NLink(innovation: innovationId, to: g2Link.nOut, from: g2Link.nIn)
+                var childLink = NLink(innovation: innovationId, to: g2Link.nOut, from: g2Link.nIn, weight: g2Link.weight, enabled: g2Link.enabled, recurrent: g2Link.recurrent)
+                
+                //var childLink = NLink(innovation: innovationId, to: g2Link.nOut, from: g2Link.nIn)
                 if !g2Link.enabled { if normalRandom() <= 0.75 { childLink.disable() } } // by chance, turns child gene off if was off in parent
                 childLinks.insert(childLink, for: innovationId)
                 for node in g2.getNodes() {
@@ -362,7 +444,8 @@ public class NSpecies {
                 if normalRandom() <= 0.5 {       // Use g1's innovations
                     let innovationId = genomeAUnmatchingGenes.removeFirst()
                     let g1Link = database.linkInnovations.value(for: innovationId)!
-                    var childLink = NLink(innovation: innovationId, to: g1Link.nOut, from: g1Link.nIn)
+                    var childLink = NLink(innovation: innovationId, to: g1Link.nOut, from: g1Link.nIn, weight: g1Link.weight, enabled: g1Link.enabled, recurrent: g1Link.recurrent)
+                    //var childLink = NLink(innovation: innovationId, to: g1Link.nOut, from: g1Link.nIn)
                     if !g1Link.enabled { if normalRandom() <= 0.75 { childLink.disable() } } // by chance, turns child gene off if was off in parent
                     childLinks.insert(childLink, for: innovationId)
                     for node in g1NodeCopy {
@@ -373,7 +456,9 @@ public class NSpecies {
                 } else {                    // Use g2's innovations
                     let innovationId = genomeBUnmatchingGenes.removeFirst()
                     let g2Link = database.linkInnovations.value(for: innovationId)!
-                    var childLink = NLink(innovation: innovationId, to: g2Link.nOut, from: g2Link.nIn)
+                    var childLink = NLink(innovation: innovationId, to: g2Link.nOut, from: g2Link.nIn, weight: g2Link.weight, enabled: g2Link.enabled, recurrent: g2Link.recurrent)
+                    
+                    //var childLink = NLink(innovation: innovationId, to: g2Link.nOut, from: g2Link.nIn)
                     if !g2Link.enabled { if normalRandom() <= 0.75 { childLink.disable() } } // by chance, turns child gene off if was off in parent
                     childLinks.insert(childLink, for: innovationId)
                     for node in g2NodeCopy {
