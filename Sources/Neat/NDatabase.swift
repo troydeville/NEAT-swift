@@ -10,27 +10,21 @@ public class NDatabase {
     var nodeInnovations: BTree<Int, NNodeInnovation> = BTree(order: BTREEORDER)!
     var linkInnovations: BTree<Int, NLinkInnovation> = BTree(order: BTREEORDER)!
     
-    // Variables for configuration file
-    /*
-     var perturbMutation = 0.80
-     var addNodeMutation = 0.03
-     var addLinkMutation: Double
-     var enableMutation = 0.3
-     var activationMutation = 0.0
-     var typeMutation = 0.0
-     
-     var perturbAmount = 0.5
-     var activationPerturbAmount = 1.0
-     var timesToFindConnection = 30
-     */
+    let perturbMutation: Double
+    let addNodeMutation: Double
+    let addLinkMutation: Double
+    let enableMutation: Double
+    let disableMutation: Double
+    let activationMutation: Double
+    let typeMutation: Double
+    let recurrentMutation: Double
+    let removeLinkMutation: Double
     
-    var perturbMutation: Double
-    var addNodeMutation: Double
-    var addLinkMutation: Double
-    var enableMutation: Double
-    var activationMutation: Double
-    var typeMutation: Double
-    var recurrentMutation: Double
+    var threshHold: Double
+    let c1: Double
+    let c2: Double
+    let c3: Double
+    
     
     var perturbAmount: Double
     var activationPerturbAmount: Double
@@ -73,12 +67,20 @@ public class NDatabase {
         self.perturbMutation = config["weightMutation"]!
         self.activationMutation = config["activationMutation"]!
         self.enableMutation = config["enableMutation"]!
+        self.disableMutation = config["disableMutation"]!
         self.typeMutation = config["typeMutation"]!
         self.recurrentMutation = config["recurrentMutation"]!
+        self.removeLinkMutation = config["removeLinkMutation"]!
         
         self.perturbAmount = config["weightMutation"]!
         self.activationPerturbAmount = config["activationPerturbation"]!
         self.timesToFindConnection = config["triesToFindLink"]!
+        
+        self.threshHold = config["threshHold"]!
+        self.c1 = config["c1"]!
+        self.c2 = config["c2"]!
+        self.c3 = config["c3"]!
+        
     }
     
     func newInnovation(node: NNode?, link: NLink?) -> Bool {

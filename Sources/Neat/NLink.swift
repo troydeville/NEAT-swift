@@ -41,11 +41,6 @@ public struct NLink {
     
     mutating func perturbWeight(amount: Double) {
         self.weight += amount
-        if self.weight > 1 {
-            self.weight = 1
-        } else if self.weight < -1 {
-            self.weight = -1
-        }
     }
     
     mutating func disable() {

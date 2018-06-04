@@ -128,73 +128,61 @@ public class NGenome {
             // add node
             addNode(database: database)
         }
+        if normalRandom() <= database.typeMutation {
+            changeType()
+        }
         if normalRandom() <= database.addLinkMutation {
             // add link
             addLink(database: database)
         }
+        if normalRandom() <= database.removeLinkMutation {
+            // remove link
+            //removeLink()
+        }
+        
         if normalRandom() <= database.enableMutation {
             // change enable
-            changeEnable(database: database)
+            enableLink(database: database)
+        }
+        if normalRandom() <= database.disableMutation {
+            disableLink(database: database)
         }
         if normalRandom() <= database.activationMutation {
             // perturb activation response
             perturbActivationResponse(perturbAmount: database.activationPerturbAmount)
         }
-        if normalRandom() <= database.typeMutation {
-            changeType()
-        }
+        
         
     }
     
     private func perturbWeights(database: NDatabase) {
         let linkKeys = self.links.inorderArrayFromKeys
-        let perturbAmount = database.perturbAmount
-        /*
-         if normalRandom() <= 0.5 {
-         perturbAmount *= -1
-         }
-         */
+        var perturbAmount = database.perturbAmount
+        
         if normalRandom() <= 0.5 {
-            for key in linkKeys {
-                var link = links.value(for: key)!
-                if link.from != BIASID {
-                    if normalRandom() <= 0.9 {
-                        self.links.remove(key)
-                        //print("Old link value: \(newLink.weight)")
-                        link.perturbWeight(amount: perturbAmount)
-                        //print("New link value: \(newLink.weight)")
-                        self.links.insert(link, for: link.innovation)
-                    } else {
-                        self.links.remove(key)
-                        //print("Old link value: \(newLink.weight)")
-                        link.weight = NRandom()
-                        //print("New link value: \(newLink.weight)")
-                        self.links.insert(link, for: link.innovation)
-                    }
-                    
-                }
-            }
-        } else {
-            for key in linkKeys {
-                var link = links.value(for: key)!
-                if link.from != BIASID {
-                    if normalRandom() <= 0.9 {
-                        self.links.remove(key)
-                        //print("Old link value: \(newLink.weight)")
-                        link.perturbWeight(amount: -perturbAmount)
-                        //print("New link value: \(newLink.weight)")
-                        self.links.insert(link, for: link.innovation)
-                    } else {
-                        self.links.remove(key)
-                        //print("Old link value: \(newLink.weight)")
-                        link.weight = NRandom()
-                        //print("New link value: \(newLink.weight)")
-                        self.links.insert(link, for: link.innovation)
-                    }
-                    
-                }
-            }
+            perturbAmount *= -1
         }
+        
+        var randomLocation = randomInt(min: 0, max: linkKeys.count)
+        var linkToPerturb = self.links.value(for: linkKeys[randomLocation])!
+        
+        if linkToPerturb.from != BIASID {
+            
+            if normalRandom() <= 0.9 {
+                linkToPerturb.perturbWeight(amount: perturbAmount * normalRandom())
+                self.links.remove(linkToPerturb.innovation)
+                self.links.insert(linkToPerturb, for: linkToPerturb.innovation)
+            } else {
+                linkToPerturb.perturbWeight(amount: NRandom())
+                self.links.remove(linkToPerturb.innovation)
+                self.links.insert(linkToPerturb, for: linkToPerturb.innovation)
+            }
+            
+        } else {
+            randomLocation = randomInt(min: 0, max: linkKeys.count)
+            linkToPerturb = self.links.value(for: linkKeys[randomLocation])!
+        }
+        
     }
     
     private func perturbActivationResponse(perturbAmount: Double) {
@@ -203,14 +191,14 @@ public class NGenome {
             let nodeId = randomInt(min: 0, max: self.nodes.count)
             var node = self.nodes[nodeId]
             if node.type != NType.bias {
-                node.activationResponse += perturbAmount
+                node.activationResponse += perturbAmount * normalRandom()
                 self.nodes[nodeId] = node
             }
         } else {
             let nodeId = randomInt(min: 0, max: self.nodes.count)
             var node = self.nodes[nodeId]
             if node.type != NType.bias {
-                node.activationResponse -= perturbAmount
+                node.activationResponse -= perturbAmount * normalRandom()
                 self.nodes[nodeId] = node
             }
         }
@@ -218,89 +206,78 @@ public class NGenome {
     
     private func changeType() {
         
-        for nodeId in 0..<self.nodes.count {
-            let node = self.nodes[nodeId]
+        var iRand = randomInt(min: 0, max: self.nodes.count)
+        var node = self.nodes[iRand]
+        var ccc = 10
+        
+        while ccc > 0 {
+            
             if node.type != NType.input && node.type != NType.bias && node.type != NType.output {
-                self.nodes[nodeId].activation = NRandomActivationType()
+                self.nodes[iRand].activation = NRandomActivationType()
+                break
             }
+            
+            iRand = randomInt(min: 0, max: self.nodes.count)
+            node = self.nodes[iRand]
+            ccc -= 1
+            
         }
-        /*
-         var randIndex = randomInt(min: 0, max: nodes.count)
-         var killer = 10
-         while self.nodes[randIndex].type == NType.input || self.nodes[randIndex].type == NType.bias || self.nodes[randIndex].type == NType.output {
-         if killer <= 0 { return }
-         randIndex = randomInt(min: 0, max: nodes.count)
-         killer -= 1
-         }
-         */
     }
     
-    private func changeEnable(database: NDatabase) {
+    private func removeLink() {
         
-        var keysToEnable = [Int]()
-        var keysToDisable = [Int]()
+        if self.links.numberOfKeys > 0 {
+            let linkKeys = self.links.inorderArrayFromKeys
+            let randomIndex = randomInt(min: 0, max: linkKeys.count)
+            
+            self.links.remove(linkKeys[randomIndex])
+        }
         
-        self.links.traverseKeysInOrder { key in
-            if normalRandom() <= database.addLinkMutation {
-                keysToEnable += [key]
-            } else {
-                keysToDisable += [key]
+        
+    }
+    
+    private func enableLink(database: NDatabase) {
+        
+        let linkKeys = self.links.inorderArrayFromKeys
+        
+        var iRand = randomInt(min: 0, max: linkKeys.count)
+        var link = self.links.value(for: linkKeys[iRand])!
+        var ccc = 10
+        
+        while ccc > 0 {
+            if !link.enabled {
+                link.enable()
+                self.links.remove(link.innovation)
+                self.links.insert(link, for: link.innovation)
+                break
             }
+            iRand = randomInt(min: 0, max: linkKeys.count)
+            link = self.links.value(for: linkKeys[iRand])!
+            ccc -= 1
         }
         
-        for key in keysToEnable {
-            var link = self.links.value(for: key)!
-            link.enable()
-            self.links.remove(key)
-            self.links.insert(link, for: key)
+    }
+    
+    private func disableLink(database: NDatabase) {
+        
+        let linkKeys = self.links.inorderArrayFromKeys
+        
+        var iRand = randomInt(min: 0, max: linkKeys.count)
+        var link = self.links.value(for: linkKeys[iRand])!
+        var ccc = 10
+        
+        while ccc > 0 {
+            if link.enabled {
+                link.disable()
+                self.links.remove(link.innovation)
+                self.links.insert(link, for: link.innovation)
+                break
+            }
+            iRand = randomInt(min: 0, max: linkKeys.count)
+            link = self.links.value(for: linkKeys[iRand])!
+            ccc -= 1
         }
         
-        for key in keysToDisable {
-            var link = self.links.value(for: key)!
-            link.disable()
-            self.links.remove(key)
-            self.links.insert(link, for: key)
-        }
-        
-        /*
-         let linkKeys = self.links.inorderArrayFromKeys
-         //let newLinks: BTree<Int, NLink> = BTree(order: BTREEORDER)!
-         
-         for _ in nodes {
-         let randomId = randomInt(min: 0, max: linkKeys.count)
-         var daLink = links.value(for: linkKeys[randomId])!
-         /*
-         var killer = 10
-         
-         while daLink.enabled {
-         randomId = randomInt(min: 0, max: linkKeys.count)
-         daLink = links.value(for: linkKeys[randomId])!
-         killer -= 1
-         if killer <= 0 { break }
-         }
-         */
-         daLink.enabled = !daLink.enabled
-         self.links.remove(linkKeys[randomId])
-         self.links.insert(daLink, for: daLink.innovation)
-         }
-         
-         */
-        /*
-         for key in linkKeys {
-         let link = links.value(for: key)!
-         var newLink = NLink(innovation: link.innovation, to: link.to, from: link.from, weight: link.weight, enabled: link.enabled, recurrent: link.recurrent)
-         if normalRandom() <= 0.8 {
-         newLink.enable()
-         links.remove(key)
-         newLinks.insert(newLink, for: newLink.innovation)
-         } else {
-         newLink.disable()
-         links.remove(key)
-         newLinks.insert(newLink, for: newLink.innovation)
-         }
-         }
-         */
-        //self.links = newLinks
     }
     
     private func addNode(database: NDatabase) {
@@ -459,16 +436,16 @@ public class NGenome {
                     let newLink = NLink(innovation: potentialInnovationId, to: toId, from: fromId, weight: NRandom(), enabled: true, recurrent: recurrency)
                     
                     
-                    var nCheck = 0
                     for node in 0..<self.nodes.count {
                         if self.nodes[node].id == toId {
                             self.nodes[node].incommingLinks += [newLink]
-                            nCheck += 1
-                        } else if self.nodes[node].id == fromId {
-                            self.nodes[node].outgoingLinks += [newLink]
-                            nCheck += 1
                         }
-                        if nCheck > 1 { break }
+                    }
+                    
+                    for node in 0..<self.nodes.count {
+                        if self.nodes[node].id == fromId {
+                            self.nodes[node].outgoingLinks += [newLink]
+                        }
                     }
                     
                     self.links.insert(newLink, for: potentialInnovationId)
@@ -597,15 +574,12 @@ extension NGenome {
             let newLink = NLink(innovation: link.innovation, to: link.to, from: link.from, weight: link.weight, enabled: link.enabled, recurrent: link.recurrent)
             newLinks.insert(newLink, for: key)
         }
-        /*
-         let linkKeys = self.links.inorderArrayFromKeys
-         for key in linkKeys {
-         let link = self.links.value(for: key)!
-         newLinks.insert(link, for: link.innovation)
-         }
-         */
         
+        var newNodes = [NNode]()
         
+        for node in self.nodes {
+            newNodes += [node]
+        }
         
         return NGenome(id: self.id, nodes: self.nodes, links: newLinks, fitness: self.fitness)
     }

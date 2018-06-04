@@ -81,7 +81,7 @@ public class NNeuralNetworkS {
             if !foundSpecies {
                 let s = self.species.value(for: key)!
                 let currentGenome = self.genomes.value(for: currentGenomeId)!
-                let isCompatable = s.isCompatable(g1: currentGenome, g2: s.getLeader(), threshConfig: threshConf, database: database)
+                let isCompatable = s.isCompatable(g1: currentGenome, g2: s.getLeader(), database: database)
                 if isCompatable {
                     foundSpecies = true
                     //print(currentGenome.description)

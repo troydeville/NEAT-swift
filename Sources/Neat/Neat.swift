@@ -1,6 +1,6 @@
 import Foundation
 
-public let BTREEORDER = 4
+public let BTREEORDER = 2
 public var BIASID = 0
 
 public class Neat {
@@ -37,10 +37,11 @@ public class Neat {
         }
     }
     
-    public func testNetwork(genome: NGenome, inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int, testType: NTestType) {
+    public func testNetwork(genome: NGenome, inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int, testType: NTestType, info: Bool) -> Double {
         if multithread {
-            self.networkM?.testNetwork(genome: genome, inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType)
+            return self.networkM!.testNetwork(genome: genome, inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType, info: info)
         }
+        return 0.0
     }
     
     public func nextGenome(_ previouslyTestedGenomeFitness: Double) {
@@ -64,7 +65,7 @@ public class Neat {
         if !multithread {
             return networkS!.findKing()
         } else {
-            return networkM!.findKing()
+            return networkM!.Master
         }
     }
     

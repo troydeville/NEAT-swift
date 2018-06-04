@@ -13,6 +13,8 @@ public struct NNode {
     var type: NType = NType.none
     var activation: NActivation = NActivation.sigmoid
     
+    var tick: Int = 1
+    
     var activationResponse: Double = 1
     
     var position: NPosition = NPosition()

@@ -25,6 +25,10 @@ public class NNeuralNetworkM {
     private let database: NDatabase
     public let populationSize: Int
     
+    var speciesThresholdCount = 1.0
+    
+    var generation = 0
+    
     // Compatability Threshold Config
     var threshConf = [Double]()
     
@@ -139,18 +143,32 @@ public class NNeuralNetworkM {
         return conf
     }
     
-    public func testNetwork(genome: NGenome, inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int, testType: NTestType) {
+    public func testNetwork(genome: NGenome, inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int, testType: NTestType, info: Bool) -> Double {
         var total = 0.0
         
-        for i in 0..<inputs.count {
-            print("input: \(inputs[i]):\n")
-            var network = NNetwork(genome: genome)
-            let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
-            for o in 0..<output.count {
-                print("output: \(output[o])\n\n")
-                total += abs(expected[i][o] - output[o])
+        if info {
+            for i in 0..<inputs.count {
+                print("input: \(inputs[i]):\n")
+                var network = NNetwork(genome: genome)
+                let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
+                for o in 0..<output.count {
+                    print("output: \(output[o])\n\n")
+                    total += abs(expected[i][o] - output[o])
+                }
+            }
+        } else {
+            for i in 0..<inputs.count {
+                //print("input: \(inputs[i]):\n")
+                var network = NNetwork(genome: genome)
+                let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
+                for o in 0..<output.count {
+                    //print("output: \(output[o])\n\n")
+                    total += abs(expected[i][o] - output[o])
+                }
             }
         }
+        
+        
         
         var fitness = 0.0
         
@@ -161,8 +179,8 @@ public class NNeuralNetworkM {
         } else if testType == NTestType.classification {
             fitness = pow(1 / total, 2)
         }
-        
-        print("fitness: \(fitness)")
+        //print("fitness: \(fitness)")
+        return fitness
     }
     
     public func run(inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int, testType: NTestType) {
@@ -488,11 +506,13 @@ public class NNeuralNetworkM {
         
         while !canLeaveSection { }
         
-        self.assignToSpecies()
+        self.assignToSpecies(inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType)
     }
     
-    public func assignToSpecies() {
+    public func assignToSpecies(inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int, testType: NTestType) {
         //let speciesKeys = self.species.inorderArrayFromKeys
+        
+        
         
         for _ in 1...self.genomes.numberOfKeys {
             var foundSpecies = false
@@ -501,7 +521,7 @@ public class NNeuralNetworkM {
                 if !foundSpecies {
                     let s = self.species.value(for: key)!
                     let currentGenome = self.genomes.value(for: currentGenomeId)!
-                    let isCompatable = s.isCompatable(g1: currentGenome, g2: s.getLeader(), threshConfig: threshConf, database: database)
+                    let isCompatable = s.isCompatable(g1: currentGenome, g2: s.getLeader(), database: database)
                     if isCompatable {
                         foundSpecies = true
                         //print(currentGenome.description)
@@ -514,21 +534,129 @@ public class NNeuralNetworkM {
                 let speciesId = database.nextSpeciesId()
                 let s = NSpecies(id: speciesId, leader: self.genomes.value(for: currentGenomeId)!, database: database)
                 
-                //print("\n\n\n\n\nn\nHERE\n")
-                //print(self.genomes.value(for: currentGenomeId)!)
-                //print("\n")
-                
                 species.insert(s, for: s.id)
             }
+            
             nextGenomeId()
         }
+        
+        // If the oldest species is older than 5
+        var oldest = 0
+        self.species.traverseKeysInOrder { key in
+            let s = self.species.value(for: key)!
+            let sAge = s.age
+            if sAge > oldest {
+                oldest = sAge
+            }
+        }
+        
+        let thresholdPerturbAmount = 0.01
+        
+        
+        if self.species.numberOfKeys > 4 {
+            self.database.threshHold += thresholdPerturbAmount * speciesThresholdCount
+            speciesThresholdCount += 1.0
+        } else if self.species.numberOfKeys < 4 && oldest > 5 {
+            self.database.threshHold -= thresholdPerturbAmount * speciesThresholdCount
+            speciesThresholdCount += 1.0
+        } else {
+            speciesThresholdCount = 1.0
+        }
+        
+        if generation % 50 == 0 && generation > 5 {
+            
+            // Fine tune the best genomes per species
+            print("Optimizing.")
+            
+            var genomesToFineTune = [NGenome]()
+            var idOfSpecies: [Int] = []
+            
+            self.species.traverseKeysInOrder { key in
+                var highestFitness = 0.0
+                var winnerKey = -1
+                let s = self.species.value(for: key)!
+                s.genomes.traverseKeysInOrder { gKey in
+                    let g = s.genomes.value(for: gKey)!
+                    if g.fitness > highestFitness {
+                        highestFitness = g.fitness
+                        winnerKey = gKey
+                    }
+                }
+                if s.genomes.numberOfKeys > 0 {
+                    genomesToFineTune += [s.genomes.value(for: winnerKey)!]
+                    idOfSpecies += [s.id]
+                }
+                
+            }
+            
+            for genome in 0..<genomesToFineTune.count {
+                
+                var threshhh = 0.1
+                
+                for _ in 1...10 {
+                    let ss = self.species.value(for: idOfSpecies[genome])!
+                    var testGenome = ss.genomes.value(for: genomesToFineTune[genome].id)!
+                    //var testGenome = genomes.value(for: genomesToFineTune[genome].id)!.copy()
+                    let prevScore = testGenome.fitness
+                    var currentScore = 0.0
+                    var counter = 0
+                    let triesToDoIt = 10
+                    var improved = false
+                    
+                    
+                    
+                    while (prevScore >= currentScore) && counter < triesToDoIt {
+                        
+                        let linkIds = testGenome.getLinks().inorderArrayFromKeys
+                        let iRand = randomInt(min: 0, max: linkIds.count)
+                        
+                        if normalRandom() <= 0.5 {
+                            var link = testGenome.links.value(for: linkIds[iRand])!
+                            link.weight += threshhh * normalRandom()
+                            testGenome.links.remove(link.innovation)
+                            testGenome.links.insert(link, for: link.innovation)
+                        } else {
+                            var link = testGenome.links.value(for: linkIds[iRand])!
+                            link.weight -= threshhh * normalRandom()
+                            testGenome.links.remove(link.innovation)
+                            testGenome.links.insert(link, for: link.innovation)
+                        }
+                        
+                        currentScore = testNetwork(genome: testGenome, inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType, info: false)
+                        
+                        
+                        if currentScore <= prevScore {
+                            testGenome = genomes.value(for: genomesToFineTune[genome].id)!.copy()
+                        } else {
+                            testGenome.fitness = currentScore
+                            improved = true
+                            
+                        }
+                        counter += 1
+                    }
+                    threshhh /= 1.00001
+                    if improved { // Did improve at this point if counter is less than 100
+                        print(currentScore)
+                        self.species.value(for: idOfSpecies[genome])!.genomes.remove(testGenome.id)
+                        self.species.value(for: idOfSpecies[genome])!.genomes.insert(testGenome, for: testGenome.id)
+                        /*
+                         self.genomes.remove(testGenome.id)
+                         self.genomes.insert(testGenome, for: testGenome.id)
+                         */
+                    }
+                    
+                }
+            }
+        }
+        
+        print(self.description)
         
         epoch()
     }
     
     public func epoch() {
         
-        print(self.description)
+        
         
         var tot = 0.0
         
@@ -563,7 +691,6 @@ public class NNeuralNetworkM {
         
         self.species.traverseKeysInOrder { key in
             tot += self.species.value(for: key)!.adjustFitnesses()
-            
         }
         
         
@@ -575,6 +702,8 @@ public class NNeuralNetworkM {
             
             species.setSpawnAmounts(globalAdjustedFitness: tot)
             species.incrimentAge()
+            
+            
             
             // get each species to eliminate it's lowest performing members
             species.removeLowestPerformingMembers()
@@ -598,6 +727,7 @@ public class NNeuralNetworkM {
             for child in theChildren {
                 self.genomes.insert(child, for: child.id)
             }
+            
             
             
             
@@ -669,7 +799,7 @@ public class NNeuralNetworkM {
          print(genomeGroupH.count)
          */
         
-        
+        self.generation += 1
     }
     
     public func nextGenomeId() {

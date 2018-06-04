@@ -29,8 +29,9 @@ public func randomInt(min: Int, max: Int) -> Int {
     
 }
 
+
 public func NRandomActivationType() -> NActivation {
-    switch randomInt(min: 1, max: 7) {
+    switch randomInt(min: 1, max: 16) {
     case 1:
         return NActivation.add
     case 2:
@@ -45,6 +46,47 @@ public func NRandomActivationType() -> NActivation {
         return NActivation.abs
     case 7:
         return NActivation.square
+    case 8:
+        return NActivation.cube
+    case 9:
+        return NActivation.exp
+    case 10:
+        return NActivation.guass
+    case 11:
+        return NActivation.clamped
+    case 12:
+        return NActivation.hat
+    case 13:
+        return NActivation.log
+    case 14:
+        return NActivation.softRElu
+    case 15:
+        return NActivation.sinh
+    case 16:
+        return NActivation.sech
     default: return NActivation.sigmoid
     }
 }
+
+
+/*
+ public func NRandomActivationType() -> NActivation {
+ switch randomInt(min: 1, max: 7) {
+ case 1:
+ return NActivation.sigmoid
+ case 2:
+ return NActivation.sigmoid
+ case 3:
+ return NActivation.sigmoid
+ case 4:
+ return NActivation.sigmoid
+ case 5:
+ return NActivation.sigmoid
+ case 6:
+ return NActivation.sigmoid
+ case 7:
+ return NActivation.sigmoid
+ default: return NActivation.sigmoid
+ }
+ }
+ */

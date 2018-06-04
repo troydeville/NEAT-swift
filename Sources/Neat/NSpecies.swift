@@ -167,7 +167,7 @@ public class NSpecies {
         
         var counter = Double(genomeKeys.count) * 0.80
         
-        if genomeKeys.count >= 9 {
+        if genomeKeys.count >= 2 {
             /*
              for _ in 1...tempGenomePool.count {
              let genomeToRemove = tempGenomePool.last!
@@ -505,7 +505,7 @@ public class NSpecies {
         self.age += 1
     }
     
-    func isCompatable(g1: NGenome, g2: NGenome, threshConfig: [Double], database: NDatabase) -> Bool {
+    func isCompatable(g1: NGenome, g2: NGenome, database: NDatabase) -> Bool {
         
         let g1Innovations = g1.getInnovations(database: database)
         let g2Innovations = g2.getInnovations(database: database)
@@ -594,10 +594,10 @@ public class NSpecies {
         
         Dis -= Exc
         
-        let threshHold = threshConfig[0]
-        let c1 = threshConfig[1]
-        let c2 = threshConfig[2]
-        let c3 = threshConfig[3]
+        let threshHold = database.threshHold
+        let c1 = database.c1
+        let c2 = database.c2
+        let c3 = database.c3
         let avgWeightDif = totalWeight / matchingGenes
         var compatability = 0.0
         if N < 20 {

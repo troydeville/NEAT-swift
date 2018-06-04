@@ -1,5 +1,7 @@
 import Foundation
 
+public let PI = 3.14159265358979323846264338327950288419717
+
 public enum NActivation {
     case add
     case sigmoid
@@ -8,15 +10,24 @@ public enum NActivation {
     case sine
     case abs
     case square
+    case cube
+    case exp
+    case guass
+    case clamped
+    case hat
+    case log
+    case softRElu
+    case sinh
+    case sech
 }
 
 
 public func Add(x: Double, response: Double) -> Double {
-    return x
+    return x * response
 }
 
 public func Sigmoid(x: Double, response: Double) -> Double {
-    return 1 / (1 + exp((-8 * response) * x))
+    return 1 / (1 + exp((-4.9 * response) * x))
 }
 
 public func Tanh(x: Double, response: Double) -> Double {
@@ -27,7 +38,7 @@ public func Relu(x: Double, response: Double) -> Double {
     if x <= 0.0 {
         return 0.0
     }
-    return x
+    return x * response
 }
 
 public func Sine(x: Double, response: Double) -> Double {
@@ -35,15 +46,55 @@ public func Sine(x: Double, response: Double) -> Double {
 }
 
 public func Abs(x: Double, response: Double) -> Double {
-    return abs(x)
+    return abs(x * response)
 }
 
 public func Square(x: Double, response: Double) -> Double {
-    return x * x
+    return x * x * response
 }
 
-public func SigmoidS(x: Double, response: Double) -> Double {
-    //return (sinh(x + response) / cosh(x + response))
-    return 1 / (1 + exp(5 * x))
-    //return sin(response * x)
+public func Cube(x: Double, response: Double) -> Double {
+    return x * x * x * response
+}
+
+public func Exp(x: Double, response: Double) -> Double {
+    return exp(x*response)
+}
+
+public func Gauss(x: Double, response: Double) -> Double {
+    return (1 / sqrt(2*PI)) * exp((-1/2)*(x-response)*(x-response))
+}
+
+public func Clamped(x: Double, response: Double) -> Double {
+    if x < (-1 * response) {
+        return -1 * response
+    } else if x > (1 * response) {
+        return 1 * response
+    }
+    return x * response
+}
+
+public func Hat(x: Double, response: Double) -> Double {
+    if x < (-1 * response) {
+        return 0
+    } else if x > (1 * response) {
+        return 0
+    }
+    return x * response
+}
+
+public func Log(x: Double, response: Double) -> Double {
+    return log(x * response)
+}
+
+public func SoftReLU(x: Double, response: Double) -> Double {
+    return log(1 + exp(x * response))
+}
+
+public func Sinh(x: Double, response: Double) -> Double {
+    return sinh(x / response)
+}
+
+public func Sech(x: Double, response: Double) -> Double {
+    return 1 / cosh(x * response)
 }
