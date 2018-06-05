@@ -1,6 +1,6 @@
 import Foundation
 
-public let BTREEORDER = 2
+public let BTREEORDER = 8
 public var BIASID = 0
 
 public class Neat {
@@ -11,13 +11,13 @@ public class Neat {
     private var networkM: NNeuralNetworkM?
     private var multithread: Bool
     
-    public init(inputs: Int, outputs: Int, population: Int, confURL: String, multithread: Bool) {
+    public init(inputs: Int, outputs: Int, population: Int, confFile: NConfiguration, multithread: Bool) {
         self.populationSize = population
         
         if !multithread {
-            networkS = NNeuralNetworkS(inputs: inputs, outputs: outputs, population: population, confURL: confURL)
+            networkS = NNeuralNetworkS(inputs: inputs, outputs: outputs, population: population, confFile: confFile)
         } else {
-            networkM = NNeuralNetworkM(inputs: inputs, outputs: outputs, population: population, confURL: confURL)
+            networkM = NNeuralNetworkM(inputs: inputs, outputs: outputs, population: population, confFile: confFile)
         }
         
         self.multithread = multithread
@@ -35,6 +35,12 @@ public class Neat {
         if multithread {
             networkM!.run(inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType)
         }
+    }
+    
+    public func run(inputs: [Double]) -> [Double] {
+        
+        
+        return [0.0]
     }
     
     public func testNetwork(genome: NGenome, inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int, testType: NTestType, info: Bool) -> Double {

@@ -28,58 +28,38 @@ public class NDatabase {
     
     var perturbAmount: Double
     var activationPerturbAmount: Double
-    var timesToFindConnection: Double
+    var timesToFindConnection: Int
     
     var population = 0
     
     
     var biasId: Int
     
-    init(population: Int, inputs: Int, outputs: Int, config: [String:Double]) {
-        
-        print(config)
+    init(population: Int, inputs: Int, outputs: Int, confFile: NConfiguration) {
         
         self.genomeID = population
         self.nodeID = inputs + outputs + 1
         self.biasId = inputs + 1
         self.population = population
-        //let x = Double(population)
-        //self.addLinkMutation = Sigmoid(x: x*x / (x + 1), response: 0.001) - 0.4
-        
-        /*
-         "nodeMutation": 0.01,
-         "connectionMutation": 0.5,
-         "weightMutation": 0.80,
-         "activationMutation": 0.1,
-         "enableMutation": 0.3,
-         "weightPerturbation": 0.3,
-         "activationPerturbation": 1,
-         "threshHold": 7.5,
-         "c1": 1.0,
-         "c2": 1.0,
-         "c3": 0.00001,
-         "threads": 8
-         */
         
         // Variables for configuration file
-        self.addNodeMutation = config["nodeMutation"]!
-        self.addLinkMutation = config["connectionMutation"]!
-        self.perturbMutation = config["weightMutation"]!
-        self.activationMutation = config["activationMutation"]!
-        self.enableMutation = config["enableMutation"]!
-        self.disableMutation = config["disableMutation"]!
-        self.typeMutation = config["typeMutation"]!
-        self.recurrentMutation = config["recurrentMutation"]!
-        self.removeLinkMutation = config["removeLinkMutation"]!
+        self.addNodeMutation = confFile.nodeMutation
+        self.addLinkMutation = confFile.connectionMutation
+        self.perturbAmount = confFile.weightPerturbation
+        self.perturbMutation = confFile.weightMutation
+        self.activationMutation = confFile.activationMutation
+        self.enableMutation = confFile.enableMutation
+        self.disableMutation = confFile.disableMutation
+        self.typeMutation = confFile.typeMutation
+        self.recurrentMutation = confFile.recurrentMutation
+        self.removeLinkMutation = confFile.removeLinkMutation
+        self.activationPerturbAmount = confFile.activationPerturbation
+        self.timesToFindConnection = confFile.triesToFindLink
         
-        self.perturbAmount = config["weightMutation"]!
-        self.activationPerturbAmount = config["activationPerturbation"]!
-        self.timesToFindConnection = config["triesToFindLink"]!
-        
-        self.threshHold = config["threshHold"]!
-        self.c1 = config["c1"]!
-        self.c2 = config["c2"]!
-        self.c3 = config["c3"]!
+        self.threshHold = Double(confFile.threshHold)
+        self.c1 = confFile.c1
+        self.c2 = confFile.c2
+        self.c3 = confFile.c3
         
     }
     

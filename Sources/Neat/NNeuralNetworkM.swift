@@ -27,8 +27,6 @@ public class NNeuralNetworkM {
     
     var speciesThresholdCount = 1.0
     
-    var generation = 0
-    
     // Compatability Threshold Config
     var threshConf = [Double]()
     
@@ -63,30 +61,20 @@ public class NNeuralNetworkM {
     
     var canLeaveSection = false
     
-    public init(inputs: Int, outputs: Int, population: Int, confURL: String) {
+    public init(inputs: Int, outputs: Int, population: Int, confFile: NConfiguration) {
         
         self.populationSize = population
         
-        var configFile: [String : Double] = [String : Double]()
-        let url = URL(fileURLWithPath: confURL)
-        do {
-            let data = try Data(contentsOf: url)
-            configFile = try JSONDecoder().decode([String : Double].self, from: data)
-        } catch {
-            print(error)
-            fatalError()
-        }// END
         
         
-        
-        self.database = NDatabase(population: population, inputs: inputs, outputs: outputs, config: configFile)
+        self.database = NDatabase(population: population, inputs: inputs, outputs: outputs, confFile: confFile)
         
         // Fetch data from config
-        threshConf += [configFile["threshHold"]!]
-        threshConf += [configFile["c1"]!]
-        threshConf += [configFile["c2"]!]
-        threshConf += [configFile["c3"]!]
-        self.threadCount = Int(configFile["threads"]!)
+        threshConf += [confFile.threshHold]
+        threshConf += [confFile.c1]
+        threshConf += [confFile.c2]
+        threshConf += [confFile.c3]
+        self.threadCount = confFile.threads
         
         for i in 1...threadCount {
             queues += [DispatchQueue(label: "NEAT_NETWORK_\(i)/\(threadCount)")]
@@ -167,9 +155,6 @@ public class NNeuralNetworkM {
                 }
             }
         }
-        
-        
-        
         var fitness = 0.0
         
         if testType == NTestType.distanceSquared {
@@ -555,100 +540,102 @@ public class NNeuralNetworkM {
         
         if self.species.numberOfKeys > 4 {
             self.database.threshHold += thresholdPerturbAmount * speciesThresholdCount
-            speciesThresholdCount += 1.0
+            speciesThresholdCount += 0.25
         } else if self.species.numberOfKeys < 4 && oldest > 5 {
             self.database.threshHold -= thresholdPerturbAmount * speciesThresholdCount
-            speciesThresholdCount += 1.0
+            speciesThresholdCount += 0.25
         } else {
-            speciesThresholdCount = 1.0
+            speciesThresholdCount = 1
         }
         
-        if generation % 50 == 0 && generation > 5 {
-            
-            // Fine tune the best genomes per species
-            print("Optimizing.")
-            
-            var genomesToFineTune = [NGenome]()
-            var idOfSpecies: [Int] = []
-            
-            self.species.traverseKeysInOrder { key in
-                var highestFitness = 0.0
-                var winnerKey = -1
-                let s = self.species.value(for: key)!
-                s.genomes.traverseKeysInOrder { gKey in
-                    let g = s.genomes.value(for: gKey)!
-                    if g.fitness > highestFitness {
-                        highestFitness = g.fitness
-                        winnerKey = gKey
-                    }
-                }
-                if s.genomes.numberOfKeys > 0 {
-                    genomesToFineTune += [s.genomes.value(for: winnerKey)!]
-                    idOfSpecies += [s.id]
-                }
-                
-            }
-            
-            for genome in 0..<genomesToFineTune.count {
-                
-                var threshhh = 0.1
-                
-                for _ in 1...10 {
-                    let ss = self.species.value(for: idOfSpecies[genome])!
-                    var testGenome = ss.genomes.value(for: genomesToFineTune[genome].id)!
-                    //var testGenome = genomes.value(for: genomesToFineTune[genome].id)!.copy()
-                    let prevScore = testGenome.fitness
-                    var currentScore = 0.0
-                    var counter = 0
-                    let triesToDoIt = 10
-                    var improved = false
-                    
-                    
-                    
-                    while (prevScore >= currentScore) && counter < triesToDoIt {
-                        
-                        let linkIds = testGenome.getLinks().inorderArrayFromKeys
-                        let iRand = randomInt(min: 0, max: linkIds.count)
-                        
-                        if normalRandom() <= 0.5 {
-                            var link = testGenome.links.value(for: linkIds[iRand])!
-                            link.weight += threshhh * normalRandom()
-                            testGenome.links.remove(link.innovation)
-                            testGenome.links.insert(link, for: link.innovation)
-                        } else {
-                            var link = testGenome.links.value(for: linkIds[iRand])!
-                            link.weight -= threshhh * normalRandom()
-                            testGenome.links.remove(link.innovation)
-                            testGenome.links.insert(link, for: link.innovation)
-                        }
-                        
-                        currentScore = testNetwork(genome: testGenome, inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType, info: false)
-                        
-                        
-                        if currentScore <= prevScore {
-                            testGenome = genomes.value(for: genomesToFineTune[genome].id)!.copy()
-                        } else {
-                            testGenome.fitness = currentScore
-                            improved = true
-                            
-                        }
-                        counter += 1
-                    }
-                    threshhh /= 1.00001
-                    if improved { // Did improve at this point if counter is less than 100
-                        print(currentScore)
-                        self.species.value(for: idOfSpecies[genome])!.genomes.remove(testGenome.id)
-                        self.species.value(for: idOfSpecies[genome])!.genomes.insert(testGenome, for: testGenome.id)
-                        /*
-                         self.genomes.remove(testGenome.id)
-                         self.genomes.insert(testGenome, for: testGenome.id)
-                         */
-                    }
-                    
-                }
-            }
-        }
         
+        /*
+         if generation % 50 == 0 && generation > 5 {
+         
+         // Fine tune the best genomes per species
+         print("Optimizing.")
+         
+         var genomesToFineTune = [NGenome]()
+         var idOfSpecies: [Int] = []
+         
+         self.species.traverseKeysInOrder { key in
+         var highestFitness = 0.0
+         var winnerKey = -1
+         let s = self.species.value(for: key)!
+         s.genomes.traverseKeysInOrder { gKey in
+         let g = s.genomes.value(for: gKey)!
+         if g.fitness > highestFitness {
+         highestFitness = g.fitness
+         winnerKey = gKey
+         }
+         }
+         if s.genomes.numberOfKeys > 0 {
+         genomesToFineTune += [s.genomes.value(for: winnerKey)!]
+         idOfSpecies += [s.id]
+         }
+         
+         }
+         
+         for genome in 0..<genomesToFineTune.count {
+         
+         var threshhh = 0.01
+         
+         for _ in 1...100 {
+         let ss = self.species.value(for: idOfSpecies[genome])!
+         var testGenome = ss.genomes.value(for: genomesToFineTune[genome].id)!
+         //var testGenome = genomes.value(for: genomesToFineTune[genome].id)!.copy()
+         let prevScore = testGenome.fitness
+         var currentScore = 0.0
+         var counter = 0
+         let triesToDoIt = 10
+         var improved = false
+         
+         
+         
+         while (prevScore >= currentScore) && counter < triesToDoIt {
+         
+         let linkIds = testGenome.getLinks().inorderArrayFromKeys
+         let iRand = randomInt(min: 0, max: linkIds.count)
+         
+         if normalRandom() <= 0.5 {
+         var link = testGenome.links.value(for: linkIds[iRand])!
+         link.weight += threshhh * normalRandom()
+         testGenome.links.remove(link.innovation)
+         testGenome.links.insert(link, for: link.innovation)
+         } else {
+         var link = testGenome.links.value(for: linkIds[iRand])!
+         link.weight -= threshhh * normalRandom()
+         testGenome.links.remove(link.innovation)
+         testGenome.links.insert(link, for: link.innovation)
+         }
+         
+         currentScore = testNetwork(genome: testGenome, inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType, info: false)
+         
+         
+         if currentScore <= prevScore {
+         testGenome = genomes.value(for: genomesToFineTune[genome].id)!.copy()
+         } else {
+         testGenome.fitness = currentScore
+         improved = true
+         
+         }
+         counter += 1
+         }
+         threshhh /= 1.00001
+         if improved { // Did improve at this point if counter is less than 100
+         print(currentScore)
+         self.species.value(for: idOfSpecies[genome])!.genomes.remove(testGenome.id)
+         self.species.value(for: idOfSpecies[genome])!.genomes.insert(testGenome, for: testGenome.id)
+         /*
+         self.genomes.remove(testGenome.id)
+         self.genomes.insert(testGenome, for: testGenome.id)
+         */
+         }
+         
+         }
+         }
+         }
+         */
         print(self.description)
         
         epoch()
@@ -799,7 +786,7 @@ public class NNeuralNetworkM {
          print(genomeGroupH.count)
          */
         
-        self.generation += 1
+        
     }
     
     public func nextGenomeId() {

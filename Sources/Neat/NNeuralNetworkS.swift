@@ -27,19 +27,11 @@ public class NNeuralNetworkS {
     
     //var king: NGenome
     
-    public init(inputs: Int, outputs: Int, population: Int, confURL: String) {
+    public init(inputs: Int, outputs: Int, population: Int, confFile: NConfiguration) {
         
         self.populationSize = population
         
-        // Fetch data from config
-        var configFile: [String : Double] = [String : Double]()
-        let url = URL(fileURLWithPath: confURL)
-        do {
-            let data = try Data(contentsOf: url)
-            configFile = try JSONDecoder().decode([String : Double].self, from: data)
-        } catch { }// END
-        
-        self.database = NDatabase(population: population, inputs: inputs, outputs: outputs, config: configFile)
+        self.database = NDatabase(population: population, inputs: inputs, outputs: outputs, confFile: confFile)
         
         
         // initiate genomes of amount of population
@@ -53,19 +45,16 @@ public class NNeuralNetworkS {
         self.king = findKing()
         
         
-        threshConf += [configFile["threshHold"]!]
-        threshConf += [configFile["c1"]!]
-        threshConf += [configFile["c2"]!]
-        threshConf += [configFile["c3"]!]
+        threshConf += [confFile.threshHold]
+        threshConf += [confFile.c1]
+        threshConf += [confFile.c2]
+        threshConf += [confFile.c3]
         
     }
     
     public func run(inputs: [Double], inputCount: Int, outputCount: Int) -> [Double] {
-        //print(self.genomes.value(for: currentGenomeId)!.description)
         var network = NNetwork(genome: self.genomes.value(for: currentGenomeId)!)
         return network.run(inputsIn: inputs, networkType: NetworkType.SnapShot)
-        //benchMarkTest += 0.000001
-        //return [benchMarkTest]
     }
     
     public func assignFitness(fitness: Double) {
@@ -89,26 +78,10 @@ public class NNeuralNetworkS {
                 }
             }
         }
-        /*
-         for key in speciesKeys {// Find genome is compatible with the leader
-         let s = self.species.value(for: key)!
-         let currentGenome = self.genomes.value(for: currentGenomeId)!
-         let isCompatable = s.isCompatable(g1: currentGenome, g2: s.getLeader(), threshConfig: threshConf, database: database)
-         if isCompatable {
-         foundSpecies = true
-         //print(currentGenome.description)
-         s.insertGenome(genome: currentGenome)
-         break
-         }
-         }
-         */
+        
         if !foundSpecies {
             let speciesId = database.nextSpeciesId()
             let s = NSpecies(id: speciesId, leader: self.genomes.value(for: currentGenomeId)!, database: database)
-            
-            //print("\n\n\n\n\nn\nHERE\n")
-            //print(self.genomes.value(for: currentGenomeId)!)
-            //print("\n")
             
             species.insert(s, for: s.id)
         }

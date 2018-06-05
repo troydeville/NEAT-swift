@@ -127,8 +127,7 @@ public class NGenome {
         if normalRandom() <= database.addNodeMutation {
             // add node
             addNode(database: database)
-        }
-        if normalRandom() <= database.typeMutation {
+        } else if normalRandom() <= database.typeMutation {
             changeType()
         }
         if normalRandom() <= database.addLinkMutation {
@@ -143,8 +142,7 @@ public class NGenome {
         if normalRandom() <= database.enableMutation {
             // change enable
             enableLink(database: database)
-        }
-        if normalRandom() <= database.disableMutation {
+        } else if normalRandom() <= database.disableMutation {
             disableLink(database: database)
         }
         if normalRandom() <= database.activationMutation {
@@ -154,35 +152,50 @@ public class NGenome {
         
         
     }
+    /*
+     private func perturbWeights(database: NDatabase) {
+     let linkKeys = self.links.inorderArrayFromKeys
+     var perturbAmount = database.perturbAmount
+     
+     if normalRandom() <= 0.5 {
+     perturbAmount *= -1
+     }
+     
+     var randomLocation = randomInt(min: 0, max: linkKeys.count)
+     var linkToPerturb = self.links.value(for: linkKeys[randomLocation])!
+     
+     if linkToPerturb.from != BIASID {
+     
+     if normalRandom() <= 0.9 {
+     linkToPerturb.perturbWeight(amount: perturbAmount * normalRandom())
+     self.links.remove(linkToPerturb.innovation)
+     self.links.insert(linkToPerturb, for: linkToPerturb.innovation)
+     } else {
+     linkToPerturb.perturbWeight(amount: NRandom())
+     self.links.remove(linkToPerturb.innovation)
+     self.links.insert(linkToPerturb, for: linkToPerturb.innovation)
+     }
+     
+     } else {
+     randomLocation = randomInt(min: 0, max: linkKeys.count)
+     linkToPerturb = self.links.value(for: linkKeys[randomLocation])!
+     }
+     }
+     */
     
     private func perturbWeights(database: NDatabase) {
         let linkKeys = self.links.inorderArrayFromKeys
-        var perturbAmount = database.perturbAmount
-        
-        if normalRandom() <= 0.5 {
-            perturbAmount *= -1
-        }
-        
-        var randomLocation = randomInt(min: 0, max: linkKeys.count)
-        var linkToPerturb = self.links.value(for: linkKeys[randomLocation])!
-        
-        if linkToPerturb.from != BIASID {
-            
-            if normalRandom() <= 0.9 {
-                linkToPerturb.perturbWeight(amount: perturbAmount * normalRandom())
-                self.links.remove(linkToPerturb.innovation)
-                self.links.insert(linkToPerturb, for: linkToPerturb.innovation)
+        let perturbAmount = database.perturbMutation
+        for key in linkKeys {
+            var link = self.links.value(for: key)!
+            if normalRandom() <= 0.5 {
+                link.weight += perturbAmount
             } else {
-                linkToPerturb.perturbWeight(amount: NRandom())
-                self.links.remove(linkToPerturb.innovation)
-                self.links.insert(linkToPerturb, for: linkToPerturb.innovation)
+                link.weight -= perturbAmount
             }
-            
-        } else {
-            randomLocation = randomInt(min: 0, max: linkKeys.count)
-            linkToPerturb = self.links.value(for: linkKeys[randomLocation])!
+            self.links.remove(key)
+            self.links.insert(link, for: key)
         }
-        
     }
     
     private func perturbActivationResponse(perturbAmount: Double) {
