@@ -11,13 +11,23 @@ public class Neat {
     private var networkM: NNeuralNetworkM?
     private var multithread: Bool
     
-    public init(inputs: Int, outputs: Int, population: Int, confFile: NConfiguration, multithread: Bool) {
+    public init(inputs: Int, outputs: Int, population: Int, confFile: NConfiguration?, multithread: Bool) {
         self.populationSize = population
         
         if !multithread {
-            networkS = NNeuralNetworkS(inputs: inputs, outputs: outputs, population: population, confFile: confFile)
+            if confFile == nil {
+                networkS = NNeuralNetworkS(inputs: inputs, outputs: outputs, population: population, confFile: NConfiguration())
+            } else {
+                networkS = NNeuralNetworkS(inputs: inputs, outputs: outputs, population: population, confFile: confFile!)
+            }
+            
         } else {
-            networkM = NNeuralNetworkM(inputs: inputs, outputs: outputs, population: population, confFile: confFile)
+            if confFile == nil {
+                networkM = NNeuralNetworkM(inputs: inputs, outputs: outputs, population: population, confFile: NConfiguration())
+            } else {
+                networkM = NNeuralNetworkM(inputs: inputs, outputs: outputs, population: population, confFile: confFile!)
+            }
+            
         }
         
         self.multithread = multithread
