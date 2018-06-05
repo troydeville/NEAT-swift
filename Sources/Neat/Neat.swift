@@ -23,6 +23,10 @@ public class Neat {
         self.multithread = multithread
     }
     
+    public func defaultConfiguration() -> NConfiguration {
+        return NConfiguration()
+    }
+    
     public func run(inputs: [Double], inputCount: Int, outputCount: Int) -> [Double] {
         if !multithread {
             return networkS!.run(inputs: inputs, inputCount: inputCount, outputCount: outputCount)

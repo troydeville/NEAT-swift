@@ -127,7 +127,8 @@ public class NGenome {
         if normalRandom() <= database.addNodeMutation {
             // add node
             addNode(database: database)
-        } else if normalRandom() <= database.typeMutation {
+        }
+        if normalRandom() <= database.typeMutation {
             changeType()
         }
         if normalRandom() <= database.addLinkMutation {
