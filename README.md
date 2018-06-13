@@ -12,7 +12,7 @@ NEAT stands for Neural Evolution of Augmenting Topologies. Just as our brain cre
 - If you're creating a Swift executable, you can simply add the package to your app.
 
 
-To use NEAT-swift inside of an XCode project:
+**To use NEAT-swift inside of an XCode project:**
 
 - Import the package into your project
 ![alt text](http://www.troydeville.com/wp-content/uploads/2018/06/neatImport.png)
@@ -26,13 +26,13 @@ import Neat
 ```Swift
 let network = Neat(inputs: 2, outputs: 1, population: 300, confFile: nil, multithread: false)
 ```
-NOTE: "confFile" and "multithread" are not fully functional.
+**NOTE**: *"confFile" and "multithread" are not fully functional.
   "confFile" is not functional mostly because of the inability to edit mutation percentages.
-  "multithread" is functional, but only for 8 threads (i.e. most quad-core processors).
+  "multithread" is functional, but only for 8 threads (i.e. most quad-core processors).*
   - Support for other thread amounts will be coming soon. For now, 1 thread or 8 threads are supported.
   
 
-Typical implementation for a single thread NEAT network (network to be tested until a solution is found or close to it).
+**Typical implementation for a single thread NEAT network (network to be tested until a solution is found or close to it).**
 ```Swift
 
 let input = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]
