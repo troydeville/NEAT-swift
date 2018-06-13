@@ -117,7 +117,7 @@ public class NNeuralNetworkM {
         //self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
         currentGenomeKeys = self.genomes.inorderArrayFromKeys
         self.currentGenomeId = self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
-        self.king = findKing()
+        //let _ = findKing()
         
     }
     
@@ -146,11 +146,9 @@ public class NNeuralNetworkM {
             }
         } else {
             for i in 0..<inputs.count {
-                //print("input: \(inputs[i]):\n")
                 var network = NNetwork(genome: genome)
                 let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
                 for o in 0..<output.count {
-                    //print("output: \(output[o])\n\n")
                     total += abs(expected[i][o] - output[o])
                 }
             }
@@ -192,7 +190,6 @@ public class NNeuralNetworkM {
                     }
                     
                     var currentGenomeFitness = 0.0
-                    
                     
                     if testType == NTestType.distanceSquared {
                         currentGenomeFitness = pow(Double(expected.count * expected.first!.count) - total, 2)
@@ -491,6 +488,16 @@ public class NNeuralNetworkM {
         
         while !canLeaveSection { }
         
+        var highestFitness = 0.0
+        
+        self.genomes.traverseKeysInOrder { key in
+            let g = self.genomes.value(for: key)!
+            if g.fitness > highestFitness {
+                self.king = g.copy() as! NGenome
+                highestFitness = g.fitness
+            }
+        }
+        
         self.assignToSpecies(inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType)
     }
     
@@ -506,7 +513,7 @@ public class NNeuralNetworkM {
                 if !foundSpecies {
                     let s = self.species.value(for: key)!
                     let currentGenome = self.genomes.value(for: currentGenomeId)!
-                    let isCompatable = s.isCompatable(g1: currentGenome, g2: s.getLeader(), database: database)
+                    let isCompatable = s.isCompatable(g1: currentGenome, g2: s.getLeader(), database: self.database)
                     if isCompatable {
                         foundSpecies = true
                         //print(currentGenome.description)
@@ -517,40 +524,40 @@ public class NNeuralNetworkM {
             
             if !foundSpecies {
                 let speciesId = database.nextSpeciesId()
-                let s = NSpecies(id: speciesId, leader: self.genomes.value(for: currentGenomeId)!, database: database)
+                let s = NSpecies(id: speciesId, leader: self.genomes.value(for: currentGenomeId)!, database: self.database)
                 
                 species.insert(s, for: s.id)
             }
             
             nextGenomeId()
         }
-        
-        // If the oldest species is older than 5
-        var oldest = 0
-        self.species.traverseKeysInOrder { key in
-            let s = self.species.value(for: key)!
-            let sAge = s.age
-            if sAge > oldest {
-                oldest = sAge
-            }
-        }
-        
-        let thresholdPerturbAmount = 0.01
-        
-        
-        if self.species.numberOfKeys > 4 {
-            self.database.threshHold += thresholdPerturbAmount * speciesThresholdCount
-            speciesThresholdCount += 0.25
-        } else if self.species.numberOfKeys < 4 && oldest > 5 {
-            self.database.threshHold -= thresholdPerturbAmount * speciesThresholdCount
-            speciesThresholdCount += 0.25
-        } else {
-            speciesThresholdCount = 1
-        }
-        
+        /*
+         // If the oldest species is older than 5
+         var oldest = 0
+         self.species.traverseKeysInOrder { key in
+         let s = self.species.value(for: key)!
+         let sAge = s.age
+         if sAge > oldest {
+         oldest = sAge
+         }
+         }
+         
+         let thresholdPerturbAmount = 0.01
+         
+         
+         if self.species.numberOfKeys > 8 {
+         self.database.threshHold += thresholdPerturbAmount * speciesThresholdCount
+         speciesThresholdCount += 5
+         } else if self.species.numberOfKeys < 8 {
+         self.database.threshHold -= thresholdPerturbAmount * speciesThresholdCount
+         speciesThresholdCount += 5
+         } else {
+         speciesThresholdCount = 1
+         }
+         */
         
         /*
-         if generation % 50 == 0 && generation > 5 {
+         if generation % 10 == 0 && generation > 5 {
          
          // Fine tune the best genomes per species
          print("Optimizing.")
@@ -621,7 +628,7 @@ public class NNeuralNetworkM {
          }
          counter += 1
          }
-         threshhh /= 1.00001
+         threshhh /= 1.01
          if improved { // Did improve at this point if counter is less than 100
          print(currentScore)
          self.species.value(for: idOfSpecies[genome])!.genomes.remove(testGenome.id)
@@ -637,12 +644,13 @@ public class NNeuralNetworkM {
          }
          */
         print(self.description)
-        
+        //let _ = self.findKing()
         epoch()
     }
     
     public func epoch() {
         
+        // set the king
         
         
         var tot = 0.0
@@ -668,7 +676,7 @@ public class NNeuralNetworkM {
         }
         
         if keyWithHighestFitness != -1 {
-            self.Master = self.species.value(for: keyWithHighestFitness)!.King.copy()
+            self.Master = self.species.value(for: keyWithHighestFitness)!.King.copy() as! NGenome
         }
         
         
@@ -706,7 +714,7 @@ public class NNeuralNetworkM {
             
             
             // replace entire species population by the reamining offspring per species.
-            self.species.value(for: key)!.replaceMissingGenomes(database: database)
+            self.species.value(for: key)!.replaceMissingGenomes(database: self.database)
             
             // update this network with the newly created ones from the replacement
             let theChildren = self.species.value(for: key)!.getReferenceOfTheNewChildren()
@@ -723,14 +731,13 @@ public class NNeuralNetworkM {
             self.currentGenomeId = self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
             
             
-            // set the king
-            self.king = self.findKing()
+            
             
             // wipe species genomes
             species.removePopulation()
             
             /*
-             if self.species.value(for: key)!.noImprovement > 10 {
+             if self.species.value(for: key)!.noImprovement > 20 {
              self.species.remove(key)
              }
              */
@@ -802,18 +809,34 @@ public class NNeuralNetworkM {
     }
     
     public func findKing() -> NGenome {
-        var theKing: NGenome = NGenome()
-        var hFit = 0.0
-        for key in self.currentGenomeKeys {
-            let compareGenome = self.genomes.value(for: key)!
-            if compareGenome.fitness > hFit {
-                theKing = compareGenome.copy()
-                hFit = compareGenome.fitness
-                theKing.fitness = hFit
-            }
+        
+        var kings = [NGenome]()
+        
+        self.species.traverseKeysInOrder { key in
+            let s = self.species.value(for: key)!
+            kings += [s.King.copy() as! NGenome]
         }
         
-        if theKing.id == 0 { return self.king } else { return theKing }
+        kings.sort()
+        
+        if kings.count != 0 {
+            self.king = kings.first!
+        }
+        /*
+         var theKing: NGenome = NGenome()
+         var hFit = 0.0
+         for key in self.currentGenomeKeys {
+         let compareGenome = self.genomes.value(for: key)!
+         if compareGenome.fitness > hFit {
+         theKing = compareGenome.copy()
+         hFit = compareGenome.fitness
+         theKing.fitness = hFit
+         }
+         }
+         
+         if theKing.id == 0 { return self.king } else { return theKing }
+         */
+        return self.king
     }
     
 }

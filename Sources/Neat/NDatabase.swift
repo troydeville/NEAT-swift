@@ -119,27 +119,12 @@ public class NDatabase {
     }
     
     func getLinkDataFromComparison(nodeFrom: Int, nodeTo: Int) -> [Int] {
-        //let linkIds = self.linkInnovations.inorderArrayFromKeys
         
         var nodesToCheck = [Int]()
         
         var linksFrom = [NLinkInnovation]()
         var linksTo = [NLinkInnovation]()
-        /*
-         for key in linkIds {
-         let linkInov = self.linkInnovations.value(for: key)!
-         if linkInov.nIn == nodeFrom {
-         linksFrom += [linkInov]
-         }
-         }
-         
-         for key in linkIds {
-         let linkInov = self.linkInnovations.value(for: key)!
-         if linkInov.nOut == nodeTo {
-         linksTo += [linkInov]
-         }
-         }
-         */
+
         self.linkInnovations.traverseKeysInOrder { key in
             
             let linkInov1 = self.linkInnovations.value(for: key)!
@@ -176,7 +161,6 @@ public class NDatabase {
     }
     
     func getInnovationId(from: Int, to: Int) -> Int {
-        //let linkKeys = self.linkInnovations.inorderArrayFromKeys
         
         var linkIdentification = -1
         var search = true
@@ -189,14 +173,7 @@ public class NDatabase {
                 }
             }
         }
-        /*
-         for key in linkKeys {
-         let link = self.linkInnovations.value(for: key)!
-         if (link.nIn == from) && (link.nOut == to) { // Innovation exists
-         return link.innovationID
-         }
-         }
-         */
+
         return linkIdentification
     }
     
@@ -209,28 +186,15 @@ extension NDatabase: CustomStringConvertible {
      *  Returns details of the database
      */
     public var description: String {
-        //let nodeKeys = self.nodeInnovations.inorderArrayFromKeys
         var innovationIds = [Int]()
         
         self.nodeInnovations.traverseKeysInOrder { key in
             innovationIds += [self.nodeInnovations.value(for: key)!.innovationId]
         }
-        /*
-         for nKey in nodeKeys {
-         innovationIds += [self.nodeInnovations.value(for: nKey)!.innovationId]
-         }
-         */
-        
-        //let linkKeys = self.linkInnovations.inorderArrayFromKeys
         
         self.linkInnovations.traverseKeysInOrder { key in
             innovationIds += [self.linkInnovations.value(for: key)!.innovationID]
         }
-        /*
-         for lKey in linkKeys {
-         innovationIds += [self.linkInnovations.value(for: lKey)!.innovationID]
-         }
-         */
         return "\(innovationIds)"
     }
 }

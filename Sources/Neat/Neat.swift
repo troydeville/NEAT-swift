@@ -60,8 +60,9 @@ public class Neat {
     public func testNetwork(genome: NGenome, inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int, testType: NTestType, info: Bool) -> Double {
         if multithread {
             return self.networkM!.testNetwork(genome: genome, inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType, info: info)
+        } else {
+            return self.networkS!.testNetwork(genome: genome, inputs: inputs, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: testType, info: info)
         }
-        return 0.0
     }
     
     public func nextGenome(_ previouslyTestedGenomeFitness: Double) {
@@ -83,9 +84,9 @@ public class Neat {
     
     public func getKing() -> NGenome {
         if !multithread {
-            return networkS!.findKing()
+            return networkS!.king
         } else {
-            return networkM!.Master
+            return networkM!.king
         }
     }
     

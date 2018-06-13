@@ -11,16 +11,12 @@ public enum NActivation {
     case abs
     case square
     case cube
-    case exp
-    case guass
+    case gauss
     case clamped
     case hat
-    case log
-    case softRElu
     case sinh
     case sech
 }
-
 
 public func Add(x: Double, response: Double) -> Double {
     return x * response
@@ -81,14 +77,6 @@ public func Hat(x: Double, response: Double) -> Double {
         return 0
     }
     return x * response
-}
-
-public func Log(x: Double, response: Double) -> Double {
-    return log(x * response)
-}
-
-public func SoftReLU(x: Double, response: Double) -> Double {
-    return log(1 + exp(x * response))
 }
 
 public func Sinh(x: Double, response: Double) -> Double {

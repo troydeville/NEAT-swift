@@ -14,10 +14,12 @@ public class NNeuralNetworkS {
     // Network's King Genome and Fitness Score
     public var king = NGenome()
     public var topFitnessScore = 0.0
+    public var Master = NGenome()
     
     private var currentGenomeKeys = [Int]()
     private var currentGenomeKeyId = 0
     private var currentGenomeId: Int = 0
+    var speciesThresholdCount = 1.0
     
     private var database: NDatabase
     public var populationSize: Int = 0
@@ -57,6 +59,46 @@ public class NNeuralNetworkS {
         return network.run(inputsIn: inputs, networkType: NetworkType.SnapShot)
     }
     
+    public func testNetwork(genome: NGenome, inputs: [[Double]], expected: [[Double]], inputCount: Int, outputCount: Int, testType: NTestType, info: Bool) -> Double {
+        var total = 0.0
+        
+        if info {
+            var description = ""
+            for i in 0..<inputs.count {
+                print("input: \(inputs[i]):\n")
+                var network = NNetwork(genome: genome)
+                let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
+                for o in 0..<output.count {
+                    print("output: \(output[o])\n\n")
+                    total += abs(expected[i][o] - output[o])
+                }
+                description = network.getDescription()
+            }
+            print(description)
+        } else {
+            for i in 0..<inputs.count {
+                //print("input: \(inputs[i]):\n")
+                var network = NNetwork(genome: genome)
+                let output = network.run(inputsIn: inputs[i], networkType: NetworkType.SnapShot)
+                for o in 0..<output.count {
+                    //print("output: \(output[o])\n\n")
+                    total += abs(expected[i][o] - output[o])
+                }
+            }
+        }
+        var fitness = 0.0
+        
+        if testType == NTestType.distanceSquared {
+            fitness = pow(Double(expected.count * expected.first!.count) - total, 2)
+        } else if testType == NTestType.distance {
+            fitness = abs(Double(expected.count * expected.first!.count) - total)
+        } else if testType == NTestType.classification {
+            fitness = pow(1 / total, 2)
+        }
+        //print("fitness: \(fitness)")
+        return fitness
+    }
+    
     public func assignFitness(fitness: Double) {
         self.genomes.value(for: self.currentGenomeId)!.fitness = fitness
     }
@@ -89,32 +131,65 @@ public class NNeuralNetworkS {
     }
     
     public func epoch() {
+        
         var tot = 0.0
+        
+        var keysToRemove: [Int] = []
+        
+        var keyWithHighestFitness = -1
+        
+        var highestFound = 0.0
+        
+        self.species.traverseKeysInOrder { key in
+            
+            let s = self.species.value(for: key)!
+            
+            if s.King.fitness > highestFound {
+                keyWithHighestFitness = key
+                highestFound = s.King.fitness
+            }
+            
+            if s.genomes.numberOfKeys == 0 {
+                keysToRemove += [key]
+            }
+        }
+        
+        if keyWithHighestFitness != -1 {
+            self.Master = self.species.value(for: keyWithHighestFitness)!.King.copy() as! NGenome
+        }
+        
+        
+        for key in keysToRemove {
+            self.species.remove(key)
+        }
         
         self.species.traverseKeysInOrder { key in
             tot += self.species.value(for: key)!.adjustFitnesses()
         }
         
+        
         tot /= Double(self.populationSize)
         
         self.species.traverseKeysInOrder { key in
-            self.species.value(for: key)!.setSpawnAmounts(globalAdjustedFitness: tot)
-            self.species.value(for: key)!.incrimentAge()
+            
+            let species = self.species.value(for: key)!
+            
+            species.setSpawnAmounts(globalAdjustedFitness: tot)
+            species.incrimentAge()
             
             // get each species to eliminate it's lowest performing members
-            self.species.value(for: key)!.removeLowestPerformingMembers()
+            species.removeLowestPerformingMembers()
             
             // remove the lowest performing genomes in this network that was removed in the species class
-            let genomeToRemoveKeys = self.species.value(for: key)!.keysRemoved
+            let genomeToRemoveKeys = species.keysRemoved
             //print("Amount to remove: \(genomeToRemoveKeys.count)")
             for gKey in genomeToRemoveKeys {
                 self.genomes.remove(gKey)
             }
             //self.currentGenomeKeys = self.genomes.inorderArrayFromKeys
             
-            
             // replace entire species population by the reamining offspring per species.
-            self.species.value(for: key)!.replaceMissingGenomes(database: database)
+            self.species.value(for: key)!.replaceMissingGenomes(database: self.database)
             
             // update this network with the newly created ones from the replacement
             let theChildren = self.species.value(for: key)!.getReferenceOfTheNewChildren()
@@ -127,66 +202,21 @@ public class NNeuralNetworkS {
             self.currentGenomeKeys = self.genomes.inorderArrayFromKeys
             self.currentGenomeId = self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
             
+            
             // set the king
             self.king = self.findKing()
             
             // wipe species genomes
-            self.species.value(for: key)!.removePopulation()
+            species.removePopulation()
             
             /*
-             if self.species.value(for: key)!.noImprovement > 10 {
+             if self.species.value(for: key)!.noImprovement > 20 {
              self.species.remove(key)
              }
              */
+            
         }
         
-        
-        
-        /*
-         for key in sKeys {
-         self.species.value(for: key)!.adjustFitnesses()
-         self.species.value(for: key)!.setSpawnAmounts()
-         self.species.value(for: key)!.incrimentAge()
-         
-         // get each species to eliminate it's lowest performing members
-         self.species.value(for: key)!.removeLowestPerformingMembers()
-         
-         // remove the lowest performing genomes in this network that was removed in the species class
-         let genomeToRemoveKeys = self.species.value(for: key)!.keysRemoved
-         //print("Amount to remove: \(genomeToRemoveKeys.count)")
-         for gKey in genomeToRemoveKeys {
-         self.genomes.remove(gKey)
-         }
-         self.currentGenomeKeys = self.genomes.inorderArrayFromKeys
-         
-         
-         // replace entire species population by the reamining offspring per species.
-         self.species.value(for: key)!.replaceMissingGenomes(database: database)
-         
-         // update this network with the newly created ones from the replacement
-         let theChildren = self.species.value(for: key)!.getReferenceOfTheNewChildren()
-         //print("Amount to restore: \(theChildren.count)")
-         for child in theChildren {
-         self.genomes.insert(child, for: child.id)
-         }
-         
-         // reset the keys
-         self.currentGenomeKeys = self.genomes.inorderArrayFromKeys
-         self.currentGenomeId = self.genomes.value(for: currentGenomeKeys[currentGenomeKeyId])!.id
-         
-         // set the king
-         self.king = self.findKing()
-         
-         // wipe species genomes
-         self.species.value(for: key)!.removePopulation()
-         
-         /*
-         if self.species.value(for: key)!.noImprovement > 10 {
-         self.species.remove(key)
-         }
-         */
-         }
-         */
     }
     
     public func nextGenomeId() {
@@ -202,18 +232,18 @@ public class NNeuralNetworkS {
     }
     
     public func findKing() -> NGenome {
-        var theKing: NGenome = NGenome()
+        var newKing: NGenome = NGenome()
         var hFit = 0.0
         for key in self.currentGenomeKeys {
             let compareGenome = self.genomes.value(for: key)!
             if compareGenome.fitness > hFit {
-                theKing = compareGenome.copy()
+                newKing = compareGenome.copy() as! NGenome
                 hFit = compareGenome.fitness
-                theKing.fitness = hFit
+                newKing.fitness = hFit
             }
         }
         
-        if theKing.id == 0 { return self.king } else { return theKing }
+        if newKing.id == 0 { return self.king } else { return newKing }
     }
     
 }
