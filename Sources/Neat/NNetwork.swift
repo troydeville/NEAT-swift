@@ -46,7 +46,7 @@ public struct NNetwork {
         var nodePoolIds = getNodeIdsInOrder()
         
         if networkType == NetworkType.SnapShot {
-            flushcount = 1
+            flushcount = getDepth()
         } else {
             flushcount = 1
         }
@@ -60,22 +60,17 @@ public struct NNetwork {
             for i in 1...inputsIn.count {
                 var node = nodes.value(for: nodePoolIds[i - 1])!
                 node.output = inputsIn[i - 1]
-                //print("node output before: \(node.output)")
                 node.output = Sigmoid(x: node.output, response: node.activationResponse)
-                //print("Node output: \(node.output)")
-                self.nodes.remove(node.id)
+                self.nodes.remove(nodePoolIds[i - 1])
                 self.nodes.insert(node, for: node.id)
                 cNeuron += 1
             }
-            //print("\n")
             // Setup Bias Neuron
             for i in inputsIn.count+1...inputsIn.count+1 {
                 var node = nodes.value(for: nodePoolIds[i - 1])!
-                node.output = 1.0
-                //print("bias node output before: \(node.output)")
+                node.output = 1
                 node.output = Sigmoid(x: node.output, response: node.activationResponse)
-                //print("bias Node output: \(node.output)")
-                self.nodes.remove(node.id)
+                self.nodes.remove(nodePoolIds[i - 1])
                 self.nodes.insert(node, for: node.id)
                 cNeuron += 1
             }
@@ -87,19 +82,23 @@ public struct NNetwork {
                 
                 let incommingLinks = node.incommingLinks
                 
-                //print("***START***")
+                
                 for link in incommingLinks {
-                    if link.enabled {
-                        //print("innovation: \(link.innovation)")
-                        let nodeFrom = self.nodes.value(for: link.from)!
-                        //print(link.weight)
-                        //print(nodeFrom.output)
-                        sum += link.weight * nodeFrom.output
-                        //print("\n")
-                    }
+                    let nodeFrom = self.nodes.value(for: link.from)!
+                    sum += link.weight * nodeFrom.output
                 }
-                //print("***END***")
-                //print(sum)
+                /*
+                 self.links.traverseKeysInOrder { key in
+                 let link = self.links.value(for: key)!
+                 let weight = link.weight
+                 
+                 // get node output from link_from_nodeID
+                 let node = self.nodes.value(for: link.from)!
+                 let output = node.output
+                 
+                 sum += weight * output
+                 }
+                 */
                 let type = node.activation
                 switch type {
                 case NActivation.sigmoid:
@@ -172,13 +171,11 @@ public struct NNetwork {
             }
             
         } ///1...flushcount
-        //print(outputs)
+        
         return outputs
     }
     
     public func getDepth() -> Int {
-        //var depth = 1
-        //var lowestPosition: Double = 1000000
         var nodePositions = [Double]()
         for id in nodeIds {
             let node = nodes.value(for: id)!
@@ -197,22 +194,6 @@ public struct NNetwork {
         }
         nodePositions = sortAndRemoveDuplicates(nodePositions)
         return nodePositions
-    }
-    
-    public func getDescription() -> String {
-        //NODE_1, Type: input, Activation: sigmoid, Activation Response: 1.30518973439587, Position: NPosition(x: 100.0, y: 0.0, z: 0.0)
-        var string = ""
-        self.nodes.traverseKeysInOrder { key in
-            let node = self.nodes.value(for: key)!
-            string += "NODE_\(node.id), Type: \(node.type), Activation: \(node.activation), Activation Response: \(node.activationResponse), Position: \(node.position)\n"
-        }
-        string += "\n"
-        self.links.traverseKeysInOrder { key in
-            let link = self.links.value(for: key)!
-            string += "Innovation_\(link.innovation), [ from=\(link.from) : to=\(link.to) ], Enabled: \(link.enabled), Recurrent: \(link.recurrent), Weight: \(link.weight) --\n"
-        }
-        
-        return string
     }
     
     func getNodeIdsByLayer() -> [[Int]] {
