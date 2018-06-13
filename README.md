@@ -80,4 +80,5 @@ for _ in 1...network.populationSize {//testing entire population
     }
     
     print(king!.description)
+}
 ```
