@@ -43,7 +43,9 @@ var generation = 1
 
 var king: NGenome?
 
-for _ in 1...network.populationSize {//testing entire population
+while true {
+    
+    for _ in 1...network.populationSize {//testing entire population
         
         var sumedTotal = 0.0
         
@@ -55,14 +57,14 @@ for _ in 1...network.populationSize {//testing entire population
             }
         }
         
-        // A fitness function
-        let currentGenomeFitness = pow(sqrt(fitnessGoal) - sumedTotal, 2)       // Assign genome a fitness score from the test.
+        // Assign genome a fitness score from the test.
+        let currentGenomeFitness = pow(sqrt(fitnessGoal) - sumedTotal, 2)       
         
         // conditions
         if currentGenomeFitness > HighestFitness { HighestFitness = currentGenomeFitness }
-        //if HighestFitness >= fitnessGoal*0.99 { break }
         
-        network.nextGenome(currentGenomeFitness)             // Next.
+        // Next
+        network.nextGenome(currentGenomeFitness) 
     }
     
     // Do NEAT here.
@@ -71,6 +73,7 @@ for _ in 1...network.populationSize {//testing entire population
     king = network.getKing()
     
     print(network.description)
+    
     print("Generation: \(generation)")
     generation += 1
     
@@ -80,5 +83,10 @@ for _ in 1...network.populationSize {//testing entire population
     }
     
     print(king!.description)
-}
+    
+} //end
+
+let fitness = network.testNetwork(genome: king!, inputs: input, expected: expected, inputCount: inputs, outputCount: outputs, testType: .distanceSquared, info: true)
+print("Fitness: \(fitness)")
+
 ```
