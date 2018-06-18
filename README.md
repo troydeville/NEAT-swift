@@ -78,11 +78,11 @@ while true {
     generation += 1
     
     if king!.fitness >= fitnessGoal*0.99 {
+        // Print out the description after the solution is found only.
+        // Printing out the description before will result in an unpredictable outcome
         print(king!.description)
         break
     }
-    
-    print(king!.description)
     
 } //end
 
