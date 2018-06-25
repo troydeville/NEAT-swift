@@ -27,12 +27,14 @@ public class NGenome {
             let position = NPosition(x: -100, y: 0, z: 0)
             let node = NNode(id: i, type: NType.bias, position: position, activation: NActivation.sigmoid)
             nodes += [node]
+            //let _ = database.newInnovation(node: node, link: nil)
         }
         // Setup Output Neurons
         for i in (inputs+2)...(outputs+inputs+1) {
             let position = NPosition(x: Double(inputs)*25, y: 200, z: 0)
             let node = NNode(id: i, type: NType.output, position: position, activation: NActivation.sigmoid)
             nodes += [node]
+            //let _ = database.newInnovation(node: node, link: nil)
         }
         
         /* Genome's initial nodes to be connected via links */
@@ -40,6 +42,7 @@ public class NGenome {
         for i in 1...(inputs + 1) {
             for o in (inputs + 2)...(outputs + inputs + 1) {
                 let link = NLink(innovation: linkId, to: o, from: i)
+                //links += [link]
                 
                 links.insert(link, for: link.innovation)
                 nodes[i-1].outgoingLinks += [NLink(innovation: linkId, to: o, from: i)]
@@ -53,6 +56,18 @@ public class NGenome {
     init(id: Int, nodes: [NNode], links: BTree<Int, NLink>, fitness: Double) {
         self.id = id
         self.nodes = nodes
+        /*
+         var newNodes = [NNode]()
+         for node in 0..<nodes.count {
+         newNodes += [nodes[node]]
+         let nodee = newNodes[node]
+         if nodee.type != NType.output && nodee.type != NType.input && nodee.type != NType.bias  {
+         newNodes[node].activation = NRandomActivationType()
+         }
+         
+         }
+         self.nodes = newNodes
+         */
         
         self.links = links
         
@@ -61,6 +76,7 @@ public class NGenome {
         links.traverseKeysInOrder { key in
             let link = links.value(for: key)!
             if link.from == link.to {
+                //rint("\nThere is a recurrent thing and it is showing: \(link.recurrent)")
                 linksToMakeRecurrent += [key]
             }
         }
@@ -71,7 +87,15 @@ public class NGenome {
             self.links.remove(key)
             self.links.insert(link, for: key)
         }
-
+        /*
+         self.links.traverseKeysInOrder { key in
+         let link = links.value(for: key)!
+         if link.from == link.to {
+         print("\nThere is a recurrent thing and it is showing: \(link.recurrent)")
+         linksToMakeRecurrent += [key]
+         }
+         }
+         */
         self.fitness = fitness
     }
     
@@ -111,14 +135,10 @@ public class NGenome {
             // add link
             addLink(database: database)
         }
-        
-        // Not implemented in this version.
-        /*
         if normalRandom() <= database.removeLinkMutation {
             // remove link
             //removeLink()
         }
-        */
         
         if normalRandom() <= database.enableMutation {
             // change enable
@@ -133,6 +153,36 @@ public class NGenome {
         
         
     }
+    /*
+     private func perturbWeights(database: NDatabase) {
+     let linkKeys = self.links.inorderArrayFromKeys
+     var perturbAmount = database.perturbAmount
+     
+     if normalRandom() <= 0.5 {
+     perturbAmount *= -1
+     }
+     
+     var randomLocation = randomInt(min: 0, max: linkKeys.count)
+     var linkToPerturb = self.links.value(for: linkKeys[randomLocation])!
+     
+     if linkToPerturb.from != BIASID {
+     
+     if normalRandom() <= 0.9 {
+     linkToPerturb.perturbWeight(amount: perturbAmount * normalRandom())
+     self.links.remove(linkToPerturb.innovation)
+     self.links.insert(linkToPerturb, for: linkToPerturb.innovation)
+     } else {
+     linkToPerturb.perturbWeight(amount: NRandom())
+     self.links.remove(linkToPerturb.innovation)
+     self.links.insert(linkToPerturb, for: linkToPerturb.innovation)
+     }
+     
+     } else {
+     randomLocation = randomInt(min: 0, max: linkKeys.count)
+     linkToPerturb = self.links.value(for: linkKeys[randomLocation])!
+     }
+     }
+     */
     
     private func perturbWeights(database: NDatabase) {
         let linkKeys = self.links.inorderArrayFromKeys
@@ -286,9 +336,11 @@ public class NGenome {
             // Also, no connections exist so create new connections below...
             
             var linkA = NLink(innovation: database.nextInnovation(), to: newNode.id, from: linkToSplit.from, weight: NRandom(), enabled: true, recurrent: false)
+            //var linkA = NLink(innovation: database.nextInnovation(), to: newNode.id, from: linkToSplit.from)
             linkA.weight = 1
             
             database.insertLink(link: linkA)
+            //var linkB = NLink(innovation: database.nextInnovation(), to: linkToSplit.to, from: newNode.id)
             var linkB = NLink(innovation: database.nextInnovation(), to: linkToSplit.to, from: newNode.id, weight: NRandom(), enabled: true, recurrent: false)
             linkB.weight = linkToSplit.weight
             database.insertLink(link: linkB)
@@ -304,11 +356,15 @@ public class NGenome {
             newNode = NNode(id: linkData.first!, type: NType.hidden, position: newNodePosition, activation: NRandomActivationType())
             // Therefore, add the links that exist into this genome below...
             let linkAId = database.getInnovationId(from: linkToSplit.from, to: linkData.first!)
+            //linkA.weight = 1
             let linkBId = database.getInnovationId(from: linkData.first!, to: linkToSplit.to)
+            //print("linkB: \(linkData.first!):\(linkToSplit.to)")
             if (linkAId == -1) || (linkBId == -1) { fatalError() }
+            //var linkA = NLink(innovation: linkAId, to: linkData.first!, from: linkToSplit.from)
             var linkA = database.getLink(innovation: linkAId)
             linkA.weight = 1
             linkA.enabled = true
+            //var linkB = NLink(innovation: linkBId, to: linkToSplit.to, from: linkData.first!)
             var linkB = database.getLink(innovation: linkBId)
             linkB.weight = linkToSplit.weight
             
@@ -318,6 +374,7 @@ public class NGenome {
             self.links.insert(linkA, for: linkAId)
             self.links.insert(linkB, for: linkBId)
         }
+        //print(newNode.position)
         
         if !self.nodes.contains(newNode) {
             self.nodes += [newNode]
@@ -418,6 +475,7 @@ public class NGenome {
                     }
                     
                     self.links.insert(newLink, for: potentialInnovationId)
+                    //print("Old Link: \(newLink.from):\(newLink.to)")
                     break
                     
                 } else { // innovation does not exist (assuming that it doesn't exist globally and in this genome)
@@ -434,6 +492,7 @@ public class NGenome {
                     }
                     
                     // Link does not exist in this genome but does exist globally
+                    //var newLink = NLink(innovation: potentialInnovationId, to: toId, from: fromId)
                     let newLink = NLink(innovation: database.nextInnovation(), to: toId, from: fromId, weight: NRandom(), enabled: true, recurrent: recurrency)
                     
                     var nCheck = 0
@@ -450,13 +509,53 @@ public class NGenome {
                     
                     self.links.insert(newLink, for: newLink.innovation)
                     database.insertLink(link: newLink)
+                    //print("New Link: \(newLink.from):\(newLink.to)")
                     break
                 }
             }
             
+        } else { // else skip trying to find a connection (maybe add a node instead?)
+            //self.addNode(database: database) // May remove this line.
         }
-        
     }
+    
+    
+    /*
+     private func addLink(database: NDatabase) {
+     let nodeAId = -1
+     let nodeBId = -1
+     
+     var isRecurrent = false
+     
+     var inputNodeIds = [Int]()
+     var hiddenNodeIds = [Int]()
+     var outputNodeIds = [Int]()
+     for node in self.nodes {
+     // find if hidden nodes exist
+     if node.type == NType.hidden {
+     hiddenNodeIds += [node.id]
+     } else if node.type == NType.input {
+     inputNodeIds += [node.id]
+     } else if node.type == NType.output {
+     outputNodeIds += [node.id]
+     }
+     }
+     let inputHiddenIds = inputNodeIds + hiddenNodeIds
+     let hiddenOutputIds = hiddenNodeIds + outputNodeIds
+     
+     if normalRandom() <= database.recurrentMutation { // Will try to make a recurrent link.
+     var numOfTriesToFindLoop = 10
+     while numOfTriesToFindLoop > 0 {
+     // Get a random neuron
+     
+     
+     numOfTriesToFindLoop -= 1
+     }
+     }
+     
+     }
+     */
+    
     
 }
 
@@ -492,8 +591,9 @@ extension NGenome: Comparable {
 
 // Copy the Genome
 extension NGenome {
-    
     func copy(with zone: NSZone? = nil) -> Any {
+        
+        
         
         let newLinks: BTree<Int, NLink> = BTree(order: BTREEORDER)!
         
@@ -504,8 +604,9 @@ extension NGenome {
         }
         
         return NGenome(id: id, nodes: nodes, links: newLinks, fitness: fitness)
+        
+        //return NGenome(id: id, nodes: nodes, links: links, fitness: fitness)
     }
-    
 }
 
 
@@ -523,6 +624,7 @@ extension NGenome: CustomStringConvertible {
         for node in nodes {
             n += "NODE_\(node.id), Type: \(node.type), Activation: \(node.activation), Activation Response: \(node.activationResponse), Position: \(node.position)\n"
         }
+        //let linkKeys = self.links.inorderArrayFromKeys
         
         for node in self.nodes {
             let incomingLinks = node.incommingLinks
@@ -537,6 +639,12 @@ extension NGenome: CustomStringConvertible {
             
             l += "Innovation_\(theLink.innovation), [ from=\(theLink.from) : to=\(theLink.to) ], Enabled: \(theLink.enabled), Recurrent: \(theLink.recurrent), Weight: \(theLink.weight) --\n"
         }
+        /*
+         for key in linkKeys {
+         let theLink = self.links.value(for: key)!
+         l += "Innovation_\(theLink.innovation), [ \(theLink.from):\(theLink.to) ], Enabled: \(theLink.enabled), Recurrent: \(theLink.recurrent), Weight: \(theLink.weight)\n"
+         }
+         */
         
         s += "\n    Genome_\(self.id),\n\n    fitness: \(self.fitness)\n"
         return s + n + l

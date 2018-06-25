@@ -63,6 +63,7 @@ public class NNeuralNetworkS {
         var total = 0.0
         
         if info {
+            var description = ""
             for i in 0..<inputs.count {
                 print("input: \(inputs[i]):\n")
                 var network = NNetwork(genome: genome)
@@ -71,7 +72,9 @@ public class NNeuralNetworkS {
                     print("output: \(output[o])\n\n")
                     total += abs(expected[i][o] - output[o])
                 }
+                description = network.getDescription()
             }
+            print(description)
         } else {
             for i in 0..<inputs.count {
                 //print("input: \(inputs[i]):\n")
@@ -254,7 +257,6 @@ extension NNeuralNetworkS: CustomStringConvertible {
     public var description: String {
         //let keyDescription = "Genomes: \(self.currentGenomeKeys)\nInnovations: \(self.database.description)"
         var speciesDescription = ""
-        //let sKeys = self.species.inorderArrayFromKeys
         
         self.species.traverseKeysInOrder { key in
             let s = self.species.value(for: key)!
