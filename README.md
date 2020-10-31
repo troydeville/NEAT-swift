@@ -35,6 +35,8 @@ let network = Neat(inputs: 2, outputs: 1, population: 300, confFile: nil, multit
 **Typical implementation for a single thread NEAT network (network to be tested until a solution is found or close to it).**
 ```Swift
 
+let network = Neat(inputs: 2, outputs: 1, population: 300, confFile: nil, multithread: false)
+
 let input = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]
 let expected = [[0.0], [1.0], [1.0], [0.0]]
 
@@ -42,6 +44,9 @@ let fitnessGoal = 16.0
 var generation = 1
 
 var king: NGenome?
+
+let inputCount = input[0].count
+let outputCount = expected[0].count
 
 while true {
     
@@ -51,20 +56,17 @@ while true {
         
         // Test the Genome Pool
         for i in 0..<input.count {
-            let output = network.run(inputs: input[i], inputCount: inputs, outputCount: outputs)
+            let output = network.run(inputs: input[i], inputCount: inputCount, outputCount: outputCount)
             for o in 0..<output.count {
                 sumedTotal += abs(expected[i][o] - output[o])
             }
         }
         
         // Assign genome a fitness score from the test.
-        let currentGenomeFitness = pow(sqrt(fitnessGoal) - sumedTotal, 2)       
-        
-        // conditions
-        if currentGenomeFitness > HighestFitness { HighestFitness = currentGenomeFitness }
+        let currentGenomeFitness = pow(sqrt(fitnessGoal) - sumedTotal, 2)
         
         // Next
-        network.nextGenome(currentGenomeFitness) 
+        network.nextGenome(currentGenomeFitness)
     }
     
     // Do NEAT here.
@@ -86,7 +88,8 @@ while true {
     
 } //end
 
-let fitness = network.testNetwork(genome: king!, inputs: input, expected: expected, inputCount: inputs, outputCount: outputs, testType: .distanceSquared, info: true)
+let fitness = network.testNetwork(genome: king!, inputs: input, expected: expected, inputCount: inputCount, outputCount: outputCount, testType: .distanceSquared, info: true)
 print("Fitness: \(fitness)")
+
 
 ```
