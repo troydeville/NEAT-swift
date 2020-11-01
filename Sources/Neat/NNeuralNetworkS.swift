@@ -103,6 +103,11 @@ public class NNeuralNetworkS {
         self.genomes.value(for: self.currentGenomeId)!.fitness = fitness
     }
     
+    public func assignFitnessStep(fitness: Double) {
+        self.genomes.value(for: self.currentGenomeId)!.fitness = fitness
+        nextGenomeId()
+    }
+    
     public func assignToSpecies() {
         //let speciesKeys = self.species.inorderArrayFromKeys
         
@@ -128,6 +133,38 @@ public class NNeuralNetworkS {
             species.insert(s, for: s.id)
         }
         nextGenomeId()
+    }
+    
+    public func assignToSpeciesStep() {
+        //let speciesKeys = self.species.inorderArrayFromKeys
+        
+        currentGenomeKeyId = populationSize - 1
+        
+        for _ in 1...populationSize {
+            var foundSpecies = false
+            
+            self.species.traverseKeysInOrder { key in
+                if !foundSpecies {
+                    let s = self.species.value(for: key)!
+                    let currentGenome = self.genomes.value(for: currentGenomeId)!
+                    let isCompatable = s.isCompatable(g1: currentGenome, g2: s.getLeader(), database: database)
+                    if isCompatable {
+                        foundSpecies = true
+                        //print(currentGenome.description)
+                        s.insertGenome(genome: currentGenome)
+                    }
+                }
+            }
+            
+            if !foundSpecies {
+                let speciesId = database.nextSpeciesId()
+                let s = NSpecies(id: speciesId, leader: self.genomes.value(for: currentGenomeId)!, database: database)
+                
+                species.insert(s, for: s.id)
+            }
+            nextGenomeId()
+        }
+        
     }
     
     public func epoch() {
