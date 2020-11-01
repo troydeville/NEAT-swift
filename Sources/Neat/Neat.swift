@@ -74,6 +74,20 @@ public class Neat {
         }
     }
     
+    public func nextGenomeStepOne(_ previouslyTestedGenomeFitness: Double) {
+        // 1. Assign the fitness score to the genome.
+        if !multithread {
+            networkS!.assignFitnessStep(fitness: previouslyTestedGenomeFitness)
+        }
+    }
+    
+    public func nextGenomeStepTwo() {
+        // 2. Add genome to a species.
+        if !multithread {
+            networkS!.assignToSpeciesStep()
+        }
+    }
+    
     public func epoch() {
         if !multithread {
             networkS!.epoch()
