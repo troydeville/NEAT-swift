@@ -49,7 +49,7 @@ let inputCount = input[0].count
 let outputCount = expected[0].count
 
 while true {
-    
+        
     for _ in 1...network.populationSize {//testing entire population
         
         var sumedTotal = 0.0
@@ -66,8 +66,11 @@ while true {
         let currentGenomeFitness = pow(sqrt(fitnessGoal) - sumedTotal, 2)
         
         // Next
-        network.nextGenome(currentGenomeFitness)
+        network.nextGenomeStepOne(currentGenomeFitness)
     }
+        
+    // Assign genomes a fitness score from the tests.
+    network.nextGenomeStepTwo()
     
     // Do NEAT here.
     network.epoch()
@@ -79,7 +82,9 @@ while true {
     print("Generation: \(generation)")
     generation += 1
     
-    if king!.fitness >= fitnessGoal*0.99 {
+    print("King fitness: \(king!.fitness)")
+    
+    if king!.fitness >= fitnessGoal*0.965 {
         // Print out the description after the solution is found only.
         // Printing out the description before will result in an unpredictable outcome
         print(king!.description)
