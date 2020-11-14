@@ -1,4 +1,4 @@
-# NEAT Implementation With Swift 4
+# NEAT Implementation With Swift
 
 This implementation is based on K.O. Stanley and R. Miikkulainen's paper.
   http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf
