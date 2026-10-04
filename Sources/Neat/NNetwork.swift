@@ -21,7 +21,9 @@ public struct NNetwork {
         self.links.traverseKeysInOrder { key in
             let link = self.links.value(for: key)!
             
-            var fromNode = self.nodes.value(for: link.from)!
+            // A link to a node this genome doesn't have can't carry a signal; skip it.
+            guard var fromNode = self.nodes.value(for: link.from),
+                  self.nodes.value(for: link.to) != nil else { return }
             if !fromNode.outgoingLinks.contains(link) {
                 let newLink = NLink(innovation: link.innovation, to: link.to, from: link.from, weight: link.weight, enabled: link.enabled, recurrent: link.recurrent)
                 fromNode.appendOutgoingLink(link: newLink)
@@ -94,7 +96,7 @@ public struct NNetwork {
                 for link in incommingLinks {
                     if link.enabled {
                         //print("innovation: \(link.innovation)")
-                        let nodeFrom = self.nodes.value(for: link.from)!
+                        guard let nodeFrom = self.nodes.value(for: link.from) else { continue }
                         //print(link.weight)
                         //print(nodeFrom.output)
                         sum += link.weight * nodeFrom.output

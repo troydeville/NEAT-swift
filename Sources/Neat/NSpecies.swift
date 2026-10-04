@@ -386,7 +386,48 @@ public class NSpecies {
             childNodes = g2.getNodes()
         }
         
-        return NGenome(id: database.nextGenomeId(), nodes: childNodes, links: childLinks, fitness: 0.0)
+        let nodes = consistentNodes(childNodes, links: childLinks, parents: [g1, g2])
+        return NGenome(id: database.nextGenomeId(), nodes: nodes, links: childLinks, fitness: 0.0)
+    }
+    
+    /// Makes a child's nodes match its links. When both parents had equal fitness, the child
+    /// only received the nodes touched by its chosen links, so it could miss input, bias or
+    /// output nodes, and keep nodes whose stored links pointed at nodes it never got.
+    /// `NNetwork.run` crashed on those links.
+    private func consistentNodes(_ nodes: [NNode], links: BTree<Int, NLink>, parents: [NGenome]) -> [NNode] {
+        var byId = [Int: NNode]()
+        for node in nodes { byId[node.id] = node }
+        
+        var neededIds = Set<Int>()
+        links.traverseKeysInOrder { key in
+            let link = links.value(for: key)!
+            neededIds.insert(link.from)
+            neededIds.insert(link.to)
+        }
+        for parent in parents {
+            for node in parent.getNodes() where node.type == NType.input || node.type == NType.bias || node.type == NType.output {
+                neededIds.insert(node.id)
+            }
+        }
+        
+        for id in neededIds where byId[id] == nil {
+            for parent in parents {
+                if let node = parent.getNodes().first(where: { $0.id == id }) {
+                    byId[id] = node
+                    break
+                }
+            }
+        }
+        
+        let ids = Set(byId.keys)
+        var result = [NNode]()
+        for id in ids.sorted() {
+            var node = byId[id]!
+            node.incommingLinks = node.incommingLinks.filter { ids.contains($0.from) }
+            node.outgoingLinks = node.outgoingLinks.filter { ids.contains($0.to) }
+            result += [node]
+        }
+        return result
     }
     
     func incrimentAge() {
